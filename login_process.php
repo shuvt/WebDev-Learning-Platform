@@ -30,6 +30,7 @@ try {
     
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['username'] = $user['username'];
+    $_SESSION['user_role'] = $user['role'];
     $_SESSION['message'] = 'Добро пожаловать, ' . $user['username'] . '!';
     header('Location: /dashboard.php');
     exit;

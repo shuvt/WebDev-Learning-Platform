@@ -12,11 +12,20 @@ if (!isLoggedIn()) {
 
 $user = getCurrentUser();
 
+// Получаем все задания из базы данных, сгруппированные по темам
+$allTasks = getAllTasks();
+$tasksByTopic = [];
+foreach ($allTasks as $task) {
+    $tasksByTopic[$task['topic']][] = $task;
+}
+
 // Обработка отправки SQL запроса
 $user_query = '';
 $query_result = null;
+$solution_result = null;
 $error_message = '';
 $success_message = '';
+$is_correct = null;
 $current_topic = $_GET['topic'] ?? 'database_info';
 $current_task = $_GET['task'] ?? '1';
 
@@ -27,26 +36,142 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sql_query'])) {
     
     if (!empty($user_query)) {
         try {
+            // Выполняем запрос пользователя
             $query_result = executeFirebirdQuery($user_query);
-            $success_message = "Запрос выполнен успешно! Найдено записей: " . count($query_result);
+            
+            // Если это не просмотр базы данных, проверяем решение
+            if ($current_topic != 'database_info') {
+                $task = getTaskByTopicAndNumber($current_topic, $current_task);
+                
+                if ($task) {
+                    // Выполняем эталонный запрос
+                    try {
+                        $solution_result = executeFirebirdQuery($task['solution_query']);
+                        
+                        // Сравниваем результаты
+                        $is_correct = compareResults($query_result, $solution_result);
+                        
+                        if ($is_correct) {
+                            $success_message = " Задание выполнено правильно!";
+                            markTaskCompleted($user['id'], $task['id'], $user_query);
+                        } else {
+                            $success_message = "Запрос выполнен. Найдено записей: " . count($query_result);
+                            $error_message = " Результат не совпадает с ожидаемым. Попробуйте еще раз!";
+                            incrementAttempt($user['id'], $task['id'], $user_query);
+                        }
+                    } catch (Exception $e) {
+                        $success_message = "Запрос выполнен. Найдено записей: " . count($query_result);
+                    }
+                } else {
+                    $success_message = "Запрос выполнен успешно! Найдено записей: " . count($query_result);
+                }
+            } else {
+                $success_message = "Запрос выполнен успешно! Найдено записей: " . count($query_result);
+            }
             
         } catch (Exception $e) {
             $error_message = "Ошибка в SQL запросе: " . $e->getMessage();
+            
+            // Записываем неудачную попытку
+            if ($current_topic != 'database_info') {
+                $task = getTaskByTopicAndNumber($current_topic, $current_task);
+                if ($task) {
+                    incrementAttempt($user['id'], $task['id'], $user_query);
+                }
+            }
         }
     }
 }
 
-// Обработка кнопок просмотра таблиц
+// Обработка кнопок просмотра таблиц (без FIRST 50 - выводим все записи)
 if (isset($_POST['view_table'])) {
     $table_name = $_POST['view_table'];
-    $user_query = "SELECT FIRST 50 * FROM {$table_name}";
+    $user_query = "SELECT * FROM {$table_name}";
     try {
         $query_result = executeFirebirdQuery($user_query);
-        $success_message = "Таблица {$table_name} загружена! Найдено записей: " . count($query_result);
+        $success_message = "Таблица {$table_name} загружена! Записей: " . count($query_result);
     } catch (Exception $e) {
         $error_message = "Ошибка загрузки таблицы: " . $e->getMessage();
     }
 }
+
+// Функция сравнения результатов
+function compareResults($userResult, $solutionResult) {
+    // Проверяем количество строк
+    if (count($userResult) !== count($solutionResult)) {
+        return false;
+    }
+    
+    // Если оба пустые - равны
+    if (count($userResult) === 0) {
+        return true;
+    }
+    
+    // Нормализуем ключи (приводим к верхнему регистру и убираем пробелы)
+    $normalizeRow = function($row) {
+        $normalized = [];
+        foreach ($row as $key => $value) {
+            $normalizedKey = strtoupper(trim($key));
+            $normalizedValue = is_string($value) ? trim($value) : $value;
+            $normalized[$normalizedKey] = $normalizedValue;
+        }
+        return $normalized;
+    };
+    
+    // Нормализуем оба результата
+    $userNormalized = array_map($normalizeRow, $userResult);
+    $solutionNormalized = array_map($normalizeRow, $solutionResult);
+    
+    // Получаем ключи из первой строки
+    $userKeys = array_keys($userNormalized[0]);
+    $solutionKeys = array_keys($solutionNormalized[0]);
+    
+    // Проверяем количество столбцов
+    if (count($userKeys) !== count($solutionKeys)) {
+        return false;
+    }
+    
+    // Сортируем по первому столбцу для сравнения
+    $sortByFirstColumn = function($a, $b) {
+        $keys = array_keys($a);
+        $firstKey = reset($keys);
+        return strcmp((string)$a[$firstKey], (string)$b[$firstKey]);
+    };
+    
+    usort($userNormalized, $sortByFirstColumn);
+    usort($solutionNormalized, $sortByFirstColumn);
+    
+    // Сравниваем значения
+    for ($i = 0; $i < count($userNormalized); $i++) {
+        $userValues = array_values($userNormalized[$i]);
+        $solutionValues = array_values($solutionNormalized[$i]);
+        
+        for ($j = 0; $j < count($userValues); $j++) {
+            // Приводим к строке и сравниваем
+            $userVal = (string)$userValues[$j];
+            $solutionVal = (string)$solutionValues[$j];
+            
+            // Округляем числа с плавающей точкой для сравнения
+            if (is_numeric($userVal) && is_numeric($solutionVal)) {
+                if (round((float)$userVal, 2) !== round((float)$solutionVal, 2)) {
+                    return false;
+                }
+            } else if ($userVal !== $solutionVal) {
+                return false;
+            }
+        }
+    }
+    
+    return true;
+}
+
+// Названия тем для отображения
+$topicNames = [
+    'simple' => 'Простые SQL-запросы',
+    'aggregation' => 'Агрегация данных',
+    'joins' => 'Соединение таблиц',
+    'subqueries' => 'Подзапросы'
+];
 
 require_once __DIR__ . '/templates/header.php';
 ?>
@@ -61,13 +186,13 @@ require_once __DIR__ . '/templates/header.php';
             
             <div class="topics-list">
                 <!-- Описание базы данных -->
-                <div class="topic-item <?= $current_topic == 'database_info' ? 'active' : '' ?>" data-topic="database_info">
+                <div class="topic-item <?php echo $current_topic == 'database_info' ? 'active' : ''; ?>" data-topic="database_info">
                     <div class="topic-header">
                         <h3>Описание базы</h3>
                         <span class="toggle-icon">▼</span>
                     </div>
-                    <div class="tasks-list" style="<?= $current_topic == 'database_info' ? 'display: block;' : 'display: none;' ?>">
-                        <div class="task-item <?= ($current_topic == 'database_info' && $current_task == '1') ? 'active' : '' ?>" 
+                    <div class="tasks-list" style="<?php echo $current_topic == 'database_info' ? 'display: block;' : 'display: none;'; ?>">
+                        <div class="task-item <?php echo ($current_topic == 'database_info' && $current_task == '1') ? 'active' : ''; ?>" 
                              data-topic="database_info" data-task="1">
                             <span class="task-number"></span>
                             <div class="task-info">
@@ -77,200 +202,105 @@ require_once __DIR__ . '/templates/header.php';
                     </div>
                 </div>
                 
-                <!-- Простые SQL-запросы -->
-                <div class="topic-item <?= $current_topic == 'simple' ? 'active' : '' ?>" data-topic="simple">
-                    <div class="topic-header">
-                        <h3>Простые SQL-запросы</h3>
-                        <span class="toggle-icon">▼</span>
+                <!-- Динамически генерируем темы и задания из базы данных -->
+                <?php foreach ($topicNames as $topicKey => $topicName): ?>
+                    <div class="topic-item <?php echo $current_topic == $topicKey ? 'active' : ''; ?>" data-topic="<?php echo $topicKey; ?>">
+                        <div class="topic-header">
+                            <h3><?php echo $topicName; ?></h3>
+                            <span class="toggle-icon">▼</span>
+                        </div>
+                        <div class="tasks-list" style="<?php echo $current_topic == $topicKey ? 'display: block;' : 'display: none;'; ?>">
+                            <?php if (isset($tasksByTopic[$topicKey])): ?>
+                                <?php foreach ($tasksByTopic[$topicKey] as $task): ?>
+                                    <?php $completed = isTaskCompleted($user['id'], $topicKey, $task['task_number']); ?>
+                                    <div class="task-item <?php echo ($current_topic == $topicKey && $current_task == $task['task_number']) ? 'active' : ''; ?> <?php echo $completed ? 'completed' : ''; ?>" 
+                                         data-topic="<?php echo $topicKey; ?>" data-task="<?php echo $task['task_number']; ?>">
+                                        <span class="task-number"><?php echo $completed ? '✓' : $task['task_number']; ?></span>
+                                        <div class="task-info">
+                                            <h4>Задание <?php echo $task['task_number']; ?></h4>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <div class="no-tasks-msg">Заданий пока нет</div>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                    <div class="tasks-list" style="<?= $current_topic == 'simple' ? 'display: block;' : 'display: none;' ?>">
-                        <?php for ($i = 1; $i <= 5; $i++): ?>
-                            <div class="task-item <?= ($current_topic == 'simple' && $current_task == $i) ? 'active' : '' ?>" 
-                                 data-topic="simple" data-task="<?= $i ?>">
-                                <span class="task-number"><?= $i ?></span>
-                                <div class="task-info">
-                                    <h4>Задание <?= $i ?></h4>
-                                </div>
-                            </div>
-                        <?php endfor; ?>
-                    </div>
-                </div>
-                
-                <!-- Запросы с агрегацией данных -->
-                <div class="topic-item <?= $current_topic == 'aggregation' ? 'active' : '' ?>" data-topic="aggregation">
-                    <div class="topic-header">
-                        <h3>Агрегация данных</h3>
-                        <span class="toggle-icon">▼</span>
-                    </div>
-                    <div class="tasks-list" style="<?= $current_topic == 'aggregation' ? 'display: block;' : 'display: none;' ?>">
-                        <?php for ($i = 1; $i <= 5; $i++): ?>
-                            <div class="task-item <?= ($current_topic == 'aggregation' && $current_task == $i) ? 'active' : '' ?>" 
-                                 data-topic="aggregation" data-task="<?= $i ?>">
-                                <span class="task-number"><?= $i ?></span>
-                                <div class="task-info">
-                                    <h4>Задание <?= $i ?></h4>
-                                </div>
-                            </div>
-                        <?php endfor; ?>
-                    </div>
-                </div>
-                
-                <!-- Соединение таблиц -->
-                <div class="topic-item <?= $current_topic == 'joins' ? 'active' : '' ?>" data-topic="joins">
-                    <div class="topic-header">
-                        <h3>Соединение таблиц</h3>
-                        <span class="toggle-icon">▼</span>
-                    </div>
-                    <div class="tasks-list" style="<?= $current_topic == 'joins' ? 'display: block;' : 'display: none;' ?>">
-                        <?php for ($i = 1; $i <= 5; $i++): ?>
-                            <div class="task-item <?= ($current_topic == 'joins' && $current_task == $i) ? 'active' : '' ?>" 
-                                 data-topic="joins" data-task="<?= $i ?>">
-                                <span class="task-number"><?= $i ?></span>
-                                <div class="task-info">
-                                    <h4>Задание <?= $i ?></h4>
-                                </div>
-                            </div>
-                        <?php endfor; ?>
-                    </div>
-                </div>
-
-                <!--Подзапросы -->
-                <div class="topic-item <?= $current_topic == 'subqueries' ? 'active' : '' ?>" data-topic="subqueries">
-                    <div class="topic-header">
-                        <h3>Подзапросы</h3>
-                        <span class="toggle-icon">▼</span>
-                    </div>
-                    <div class="tasks-list" style="<?= $current_topic == 'subqueries' ? 'display: block;' : 'display: none;' ?>">
-                        <?php for ($i = 1; $i <= 5; $i++): ?>
-                            <div class="task-item <?= ($current_topic == 'subqueries' && $current_task == $i) ? 'active' : '' ?>" 
-                                 data-topic="subqueries" data-task="<?= $i ?>">
-                                <span class="task-number"><?= $i ?></span>
-                                <div class="task-info">
-                                    <h4>Задание <?= $i ?></h4>
-                                </div>
-                            </div>
-                        <?php endfor; ?>
-                    </div>
-                </div>
+                <?php endforeach; ?>
             </div>
         </div>
         
         <!-- Блок с редактором и результатом -->
         <div class="workspace">
+            <?php 
+            // Получаем информацию о задании из базы данных
+            $taskInfo = null;
+            if ($current_topic != 'database_info') {
+                $taskInfo = getTaskByTopicAndNumber($current_topic, $current_task);
+            }
+            ?>
             <div class="task-description">
-                <h3 id="current-task-title" style="margin-bottom: 10px;"><?= getTaskTitle($current_topic, $current_task) ?></h3>
-                <p id="current-task-desc" style="margin-bottom: 30px;"><?= getTaskDescription($current_topic, $current_task) ?></p>
+                <h3 id="current-task-title" style="margin-bottom: 10px;">
+                    <?php echo $taskInfo ? htmlspecialchars($taskInfo['title']) : ($current_topic == 'database_info' ? 'Структура базы данных Employee' : 'Задание'); ?>
+                </h3>
+                <p id="current-task-desc" style="margin-bottom: 30px;">
+                    <?php echo $taskInfo ? htmlspecialchars($taskInfo['description']) : ($current_topic == 'database_info' ? 'Ознакомьтесь со структурой базы данных Employee. Нажмите на название таблицы, чтобы просмотреть её содержимое.' : ''); ?>
+                </p>
                 
                 <?php if ($current_topic == 'database_info'): ?>
                     <div class="database-info">                        
                         <div class="table-buttons">
+                            <?php 
+                            $tables = ['COUNTRY', 'CUSTOMER', 'DEPARTMENT', 'EMPLOYEE', 'EMPLOYEE_PROJECT', 'JOB', 'PROJECT', 'PROJ_DEPT_BUDGET', 'SALARY_HISTORY', 'SALES'];
+                            foreach ($tables as $table): 
+                            ?>
                             <form method="POST" style="display: inline;">
-                                <input type="hidden" name="topic" value="<?= $current_topic ?>">
-                                <input type="hidden" name="task_id" value="<?= $current_task ?>">
-                                <button type="submit" name="view_table" value="COUNTRY" class="btn table-btn">
-                                    COUNTRY
+                                <input type="hidden" name="topic" value="<?php echo $current_topic; ?>">
+                                <input type="hidden" name="task_id" value="<?php echo $current_task; ?>">
+                                <button type="submit" name="view_table" value="<?php echo $table; ?>" class="btn table-btn">
+                                    <?php echo $table; ?>
                                 </button>
                             </form>
-                            
-                            <form method="POST" style="display: inline;">
-                                <input type="hidden" name="topic" value="<?= $current_topic ?>">
-                                <input type="hidden" name="task_id" value="<?= $current_task ?>">
-                                <button type="submit" name="view_table" value="CUSTOMER" class="btn table-btn">
-                                    CUSTOMER
-                                </button>
-                            </form>
-                            
-                            <form method="POST" style="display: inline;">
-                                <input type="hidden" name="topic" value="<?= $current_topic ?>">
-                                <input type="hidden" name="task_id" value="<?= $current_task ?>">
-                                <button type="submit" name="view_table" value="DEPARTMENT" class="btn table-btn">
-                                    DEPARTMENT
-                                </button>
-                            </form>
-                            
-                            <form method="POST" style="display: inline;">
-                                <input type="hidden" name="topic" value="<?= $current_topic ?>">
-                                <input type="hidden" name="task_id" value="<?= $current_task ?>">
-                                <button type="submit" name="view_table" value="EMPLOYEE" class="btn table-btn">
-                                    EMPLOYEE
-                                </button>
-                            </form>
-                            
-                            <form method="POST" style="display: inline;">
-                                <input type="hidden" name="topic" value="<?= $current_topic ?>">
-                                <input type="hidden" name="task_id" value="<?= $current_task ?>">
-                                <button type="submit" name="view_table" value="EMPLOYEE_PROJECT" class="btn table-btn">
-                                    EMPLOYEE_PROJECT
-                                </button>
-                            </form>
-                            
-                            <form method="POST" style="display: inline;">
-                                <input type="hidden" name="topic" value="<?= $current_topic ?>">
-                                <input type="hidden" name="task_id" value="<?= $current_task ?>">
-                                <button type="submit" name="view_table" value="JOB" class="btn table-btn">
-                                    JOB
-                                </button>
-                            </form>
-
-                            <form method="POST" style="display: inline;">
-                                <input type="hidden" name="topic" value="<?= $current_topic ?>">
-                                <input type="hidden" name="task_id" value="<?= $current_task ?>">
-                                <button type="submit" name="view_table" value="PROJECT" class="btn table-btn">
-                                    PROJECT
-                                </button>
-                            </form>
-
-                            <form method="POST" style="display: inline;">
-                                <input type="hidden" name="topic" value="<?= $current_topic ?>">
-                                <input type="hidden" name="task_id" value="<?= $current_task ?>">
-                                <button type="submit" name="view_table" value="PROJ_DEPT_BUDGET" class="btn table-btn">
-                                    PROJ_DEPT_BUDGET
-                                </button>
-                            </form>
-
-                            <form method="POST" style="display: inline;">
-                                <input type="hidden" name="topic" value="<?= $current_topic ?>">
-                                <input type="hidden" name="task_id" value="<?= $current_task ?>">
-                                <button type="submit" name="view_table" value="SALARY_HISTORY" class="btn table-btn">
-                                    SALARY_HISTORY
-                                </button>
-                            </form>
-
-                            <form method="POST" style="display: inline;">
-                                <input type="hidden" name="topic" value="<?= $current_topic ?>">
-                                <input type="hidden" name="task_id" value="<?= $current_task ?>">
-                                <button type="submit" name="view_table" value="SALES" class="btn table-btn">
-                                    SALES
-                                </button>
-                            </form>
+                            <?php endforeach; ?>
                         </div>
-                    
                     </div>
                 <?php endif; ?>
             </div>
             
-            <!-- Форма для SQL запроса  -->
-            <?php if ($current_topic != 'database_info' || !isset($_POST['view_table'])): ?>
+            <!-- Форма для SQL запроса - только для заданий, не для просмотра базы -->
+            <?php if ($current_topic != 'database_info'): ?>
             <form method="POST" class="sql-form">
-                <input type="hidden" name="topic" value="<?= $current_topic ?>">
-                <input type="hidden" name="task_id" id="task_id" value="<?= $current_task ?>">
+                <input type="hidden" name="topic" value="<?php echo $current_topic; ?>">
+                <input type="hidden" name="task_id" id="task_id" value="<?php echo $current_task; ?>">
                 
                 <div class="form-group">
                     <label for="sql_query">Ваш SQL запрос:</label>
-                    <textarea id="sql_query" name="sql_query" rows="6" placeholder="Напишите здесь ваш SQL запрос..."><?= htmlspecialchars($user_query) ?></textarea>
+                    <div class="sql-editor-container">
+                        <div class="sql-editor-backdrop">
+                            <div class="sql-highlights" id="sql-highlights"></div>
+                        </div>
+                        <textarea id="sql_query" name="sql_query" rows="8" 
+                                  placeholder="Напишите здесь ваш SQL запрос..."
+                                  spellcheck="false"><?php echo htmlspecialchars($user_query); ?></textarea>
+                    </div>
                 </div>
                 
-                <button type="submit" class="btn run-btn">▶ Выполнить запрос</button>
+                <div class="form-buttons">
+                    <button type="submit" class="btn run-btn">▶ Выполнить запрос</button>
+                    <?php if (isTaskCompleted($user['id'], $current_topic, $current_task)): ?>
+                        <span class="completed-badge">✓ Задание выполнено</span>
+                    <?php endif; ?>
+                </div>
             </form>
             <?php endif; ?>
             
             <!-- Результаты -->
             <?php if ($success_message): ?>
-                <div class="message success"><?= $success_message ?></div>
+                <div class="message success <?php echo $is_correct === true ? 'correct' : ''; ?>"><?php echo $success_message; ?></div>
             <?php endif; ?>
             
             <?php if ($error_message): ?>
-                <div class="message error"><?= $error_message ?></div>
+                <div class="message error"><?php echo $error_message; ?></div>
             <?php endif; ?>
             
             <?php if ($query_result !== null): ?>
@@ -283,7 +313,7 @@ require_once __DIR__ . '/templates/header.php';
                                     <thead>
                                         <tr>
                                             <?php foreach (array_keys($query_result[0]) as $column): ?>
-                                                <th><?= htmlspecialchars($column) ?></th>
+                                                <th><?php echo htmlspecialchars($column); ?></th>
                                             <?php endforeach; ?>
                                         </tr>
                                     </thead>
@@ -291,7 +321,7 @@ require_once __DIR__ . '/templates/header.php';
                                         <?php foreach ($query_result as $row): ?>
                                             <tr>
                                                 <?php foreach ($row as $value): ?>
-                                                    <td><?= htmlspecialchars($value ?? 'NULL') ?></td>
+                                                    <td><?php echo htmlspecialchars($value ?? 'NULL'); ?></td>
                                                 <?php endforeach; ?>
                                             </tr>
                                         <?php endforeach; ?>
@@ -300,7 +330,7 @@ require_once __DIR__ . '/templates/header.php';
                             </div>
                         </div>
                         <div class="result-info">
-                            Показано записей: <?= count($query_result) ?>
+                            Показано записей: <?php echo count($query_result); ?>
                         </div>
                     <?php else: ?>
                         <p>Запрос выполнен, но не вернул данных</p>
@@ -311,85 +341,6 @@ require_once __DIR__ . '/templates/header.php';
     </div>
 </div>
 
-<?php
-// Функции для получения описаний заданий
-function getTaskTitle($topic, $task) {
-    $tasks = [
-        'database_info' => [
-            '1' => 'Структура базы данных Employee'
-        ],
-        'simple' => [
-            '1' => 'Простые SQL-Запросы. Задание 1.',
-            '2' => 'Простые SQL-Запросы. Задание 2.',
-            '3' => 'Простые SQL-Запросы. Задание 3.',
-            '4' => 'Простые SQL-Запросы. Задание 4.',
-            '5' => 'Простые SQL-Запросы. Задание 5.'
-        ],
-        'aggregation' => [
-            '1' => 'Агрегация данных. Задание 1',
-            '2' => 'Агрегация данных. Задание 2',
-            '3' => 'Агрегация данных. Задание 3',
-            '4' => 'Агрегация данных. Задание 4',
-            '5' => 'Агрегация данных. Задание 5'
-        ],
-        'joins' => [
-            '1' => 'Соединение таблиц. Задание 1',
-            '2' => 'Соединение таблиц. Задание 2',
-            '3' => 'Соединение таблиц. Задание 3',
-            '4' => 'Соединение таблиц. Задание 4',
-            '5' => 'Соединение таблиц. Задание 5'
-        ],
-        'subqueries' => [
-            '1' => 'Подзапросы. Задание 1',
-            '2' => 'Подзапросы. Задание 2',
-            '3' => 'Подзапросы. Задание 3',
-            '4' => 'Подзапросы. Задание 4',
-            '5' => 'Подзапросы. Задание 5'
-        ]
-    ];
-    
-    return $tasks[$topic][$task] ?? 'Задание';
-}
-
-function getTaskDescription($topic, $task) {
-    $descriptions = [
-        'database_info' => [
-            '1' => 'Ознакомьтесь со структурой базы данных Employee. Используйте кнопки ниже для просмотра содержимого таблиц.'
-        ],
-        'simple' => [
-            '1' => 'Напишите SQL запрос для вывода всех сотрудников из таблицы EMPLOYEE. Ожидается 104 записи в результате.',
-            '2' => 'Напишите SQL запрос для вывода всех отделов и их местоположений из таблицы DEPARTMENT. Ожидается 22 записи в результате.',
-            '3' => 'Напишите SQL запрос для вывода сотрудников с зарплатой больше 100000. Ожидается 10 записей.',
-            '4' => 'Напишите SQL запрос для вывода фамилий и дат приема на работу сотрудников, нанятых после 1 января 1993 года. Ожидается 76 записей.',
-            '5' => 'Напишите SQL запрос для вывода списка сотрудников в USA с зарплатой больше 10000 или сотрудников с номером отдела 120. Ожидается 36 записей.'
-        ],
-        'aggregation' => [
-            '1' => 'Используя агрегатные функции найдите среднюю зарплату сотрудников из отдела 623. Ожидается 1 запись.',
-            '2' => 'Найдите максимальное значение зарплаты среди всех сотрудников. Ожидается 1 запись.',
-            '3' => 'Сгруппируйте данные по отделам и найдите количество сотрудников для каждого из них. Ожидается 20 записей.',
-            '4' => 'Рассчитайте суммарный бюджет для каждого отдела. Ожидается 22 запись.',
-            '5' => 'Найдите минимальное и максимальное значение зарплаты в отделе 120. Ожидается два столбца: MIN_SALARY, MAX_SALARY и 1 запись в результате.'
-        ],
-        'joins' => [
-            '1' => 'Выведите полные имена сотрудников и названия их отделов. Ожидается два столбца: FULL_NAME, DEPARTMENT_NAME и 42 записи в результате.',
-            '2' => 'Для каждого заказа вывести страну сотрудника, принимавшего заказ. Используйте соединение таблиц SALES и EMPLOYEE. Ожидается два столбца: PO_NUMBER, EMPLOYEE_COUNTRY и 33 записи в результате.',
-            '3' => 'Выведите полные имена сотрудников из отдела "Customer Support". Ожидается 1 столбец FULL_NAME и 5 записей в результате.',
-            '4' => 'Выведите названия всех проектов и полное имя лидера проекта, если оно есть. Для этого объедините таблицы PROJECT и EMPLOYEE. Ожидается два столбца: PROJECT_NAME, TEAM_LEADER_NAME и 16 записей в результате.',
-            '5' => 'Выведите имена сотрудников с бюджетом отдела больше 500000, которые были наняты после 01.01.1993. Ожидается 3 столбца: FULL_NAME, BUDGET, HIRE_DATE и 6 записей в результате.'
-        ],
-        'subqueries' => [
-            '1' => 'Выведите полную информацию (*) о сотрудниках, у которых зарплата выше средней. Ожидается 3 записи.',
-            '2' => 'Выведите названия и расположения отделов, у которых бюджет меньше среднего. Ожидается 15 записей.',
-            '3' => 'Для каждого проекта выведите названия отделов, принимавших участие в его выполнении в 1994 году. Для проектов, которые не выполнялись в 1994 году вместо названия отдела указать null. Используйте таблицы PROJ_DEPT_BUDGET, PROJECT, DEPARTMENT. Ожидается два столбца PROJECT_NAME, DEPARTMENT_NAME и 27 записей в результате.',
-            '4' => 'Выведите имена сотрудников, работающих в том же отделе, что и сотрудник с фамилией "Parker" (включительно). Ожидается столбец FULL_NAME 5 записей в результате.',
-            '5' => 'Выведите названия проектов, проектируемый бюджет которых больше бюджета отдела "Marketing". Ожидается 2 записи в результате.'
-        ]
-    ];
-    
-    return $descriptions[$topic][$task] ?? 'Описание задания будет добавлено позже.';
-}
-?>
-
 <style>
 .practice-container {
     max-width: 1600px;
@@ -399,51 +350,40 @@ function getTaskDescription($topic, $task) {
 
 .practice-layout {
     display: grid;
-    grid-template-columns: 290px minmax(0, 1fr);
-    gap: 40px;
+    grid-template-columns: 280px 1fr;
+    gap: 25px;
     margin-top: 20px;
 }
 
 .topics-sidebar {
     background: white;
-    padding: 25px;
+    padding: 20px;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(67, 35, 35, 0.1);
     height: fit-content;
     position: sticky;
     top: 20px;
-    max-height: 80vh;
-    overflow-y: auto;
 }
 
 .topics-sidebar h2 {
     color: rgb(47, 87, 85);
     margin-bottom: 20px;
-    font-size: 1.3rem;
-}
-
-.topics-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    font-size: 1.2rem;
+    border-bottom: 2px solid rgb(90, 150, 144);
+    padding-bottom: 10px;
 }
 
 .topic-item {
-    border: 2px solid rgb(224, 217, 217);
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.topic-item.active {
-    border-color: rgb(90, 150, 144);
+    margin-bottom: 10px;
 }
 
 .topic-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px;
+    padding: 12px;
     background: rgba(90, 150, 144, 0.1);
+    border-radius: 8px;
     cursor: pointer;
     transition: background 0.3s;
 }
@@ -452,19 +392,15 @@ function getTaskDescription($topic, $task) {
     background: rgba(90, 150, 144, 0.2);
 }
 
-.topic-item.active .topic-header {
-    background: rgba(90, 150, 144, 0.3);
-}
-
 .topic-header h3 {
-    color: rgb(47, 87, 85);
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
+    color: rgb(47, 87, 85);
 }
 
 .toggle-icon {
-    color: rgb(90, 150, 144);
     font-size: 0.8rem;
+    color: rgb(47, 87, 85);
     transition: transform 0.3s;
 }
 
@@ -473,17 +409,18 @@ function getTaskDescription($topic, $task) {
 }
 
 .tasks-list {
-    background: white;
-    display: none;
+    padding: 10px 0 10px 10px;
 }
 
 .task-item {
     display: flex;
     align-items: center;
-    padding: 12px 15px;
+    gap: 10px;
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 6px;
     cursor: pointer;
     transition: background 0.3s;
-    border-top: 1px solid rgb(224, 217, 217);
 }
 
 .task-item:hover {
@@ -492,25 +429,30 @@ function getTaskDescription($topic, $task) {
 
 .task-item.active {
     background: rgba(90, 150, 144, 0.2);
+    border-left: 3px solid rgb(47, 87, 85);
+}
+
+.task-item.completed .task-number {
+    background: rgb(40, 167, 69);
+    color: white;
 }
 
 .task-number {
-    background: rgb(47, 87, 85);
-    color: white;
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: rgb(224, 217, 217);
+    border-radius: 50%;
+    font-size: 0.85rem;
     font-weight: bold;
-    margin-right: 10px;
-    flex-shrink: 0;
-    font-size: 0.8rem;
+    color: rgb(67, 35, 35);
 }
 
 .task-item.active .task-number {
     background: rgb(90, 150, 144);
+    color: white;
 }
 
 .task-info h4 {
@@ -519,11 +461,19 @@ function getTaskDescription($topic, $task) {
     font-size: 0.9rem;
 }
 
+.no-tasks-msg {
+    color: #999;
+    font-style: italic;
+    padding: 10px;
+    font-size: 0.85rem;
+}
+
 .workspace {
     background: white;
     padding: 30px;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(67, 35, 35, 0.1);
+    overflow: hidden;
 }
 
 .database-info {
@@ -531,11 +481,6 @@ function getTaskDescription($topic, $task) {
     padding: 20px;
     border-radius: 8px;
     margin-bottom: 20px;
-}
-
-.database-info h4 {
-    color: rgb(47, 87, 85);
-    margin-bottom: 10px;
 }
 
 .table-buttons {
@@ -559,10 +504,132 @@ function getTaskDescription($topic, $task) {
     background: rgb(90, 150, 144);
 }
 
-/* Стили для таблицы с прокруткой */
+/* SQL Editor с подсветкой синтаксиса - увеличенный шрифт и яркие цвета */
+.sql-editor-container {
+    position: relative;
+    width: 100%;
+}
+
+.sql-editor-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    overflow: hidden;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.sql-highlights {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 16px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    color: transparent;
+}
+
+.sql-form textarea {
+    position: relative;
+    width: 100%;
+    padding: 15px;
+    border: 2px solid rgb(224, 217, 217);
+    border-radius: 8px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 16px;
+    line-height: 1.6;
+    resize: vertical;
+    transition: border 0.3s;
+    background: transparent;
+    color: #333;
+    z-index: 1;
+}
+
+.sql-form textarea:focus {
+    border-color: rgb(90, 150, 144);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(90, 150, 144, 0.1);
+}
+
+/* Подсветка синтаксиса - яркие цвета */
+.sql-keyword {
+    font-weight: bold;
+    color: #000080;
+}
+
+.sql-table {
+    color: #008000;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.sql-string {
+    color: #0066CC;
+}
+
+.sql-comment {
+    color: #0000FF;
+    font-style: italic;
+}
+
+.sql-function {
+    color: #800080;
+    font-weight: 600;
+}
+
+.sql-number {
+    color: #CC3300;
+}
+
+.form-buttons {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.run-btn {
+    background: rgb(47, 87, 85);
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.run-btn:hover {
+    background: rgb(90, 150, 144);
+}
+
+.completed-badge {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Результаты - фиксированная ширина с прокруткой */
+.result-section {
+    margin-top: 25px;
+}
+
+.result-section h4 {
+    color: rgb(47, 87, 85);
+    margin-bottom: 15px;
+}
+
 .result-table-container {
+    width: 100%;
     max-width: 100%;
     overflow-x: auto;
+    overflow-y: auto;
+    max-height: 500px;
     border: 1px solid rgb(224, 217, 217);
     border-radius: 8px;
     margin: 15px 0;
@@ -573,7 +640,8 @@ function getTaskDescription($topic, $task) {
 }
 
 .result-table table {
-    width: 100%;
+    width: max-content;
+    min-width: 100%;
     border-collapse: collapse;
     background: white;
 }
@@ -584,9 +652,10 @@ function getTaskDescription($topic, $task) {
     padding: 12px;
     text-align: left;
     font-weight: bold;
-    position: sticky;
-    left: 0;
     white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .result-table td {
@@ -606,47 +675,6 @@ function getTaskDescription($topic, $task) {
     margin-top: 10px;
 }
 
-.sql-form textarea {
-    width: 100%;
-    padding: 15px;
-    border: 2px solid rgb(224, 217, 217);
-    border-radius: 8px;
-    font-family: monospace;
-    font-size: 14px;
-    resize: vertical;
-    transition: border 0.3s;
-}
-
-.sql-form textarea:focus {
-    border-color: rgb(90, 150, 144);
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(90, 150, 144, 0.1);
-}
-
-.run-btn {
-    background: rgb(47, 87, 85);
-    color: white;
-    padding: 12px 30px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    margin-top: 15px;
-}
-
-.run-btn:hover {
-    background: rgb(90, 150, 144);
-}
-
-.result-section {
-    margin-top: 25px;
-}
-
-.result-section h4 {
-    color: rgb(47, 87, 85);
-    margin-bottom: 15px;
-}
-
 .message {
     padding: 15px;
     margin: 15px 0;
@@ -660,29 +688,164 @@ function getTaskDescription($topic, $task) {
     border-left-color: rgb(90, 150, 144);
 }
 
+.success.correct {
+    background: rgba(40, 167, 69, 0.1);
+    color: #155724;
+    border-left-color: #28a745;
+}
+
 .error { 
-    background: rgba(67, 35, 35, 0.1); 
-    color: rgb(67, 35, 35); 
-    border-left-color: rgb(67, 35, 35);
+    background: rgba(220, 53, 69, 0.1); 
+    color: #721c24; 
+    border-left-color: #dc3545;
 }
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Переключение тем
-    const topicHeaders = document.querySelectorAll('.topic-header');
+// Списки для подсветки синтаксиса
+// КЛЮЧЕВЫЕ СЛОВА SQL - жирный синий
+var SQL_KEYWORDS = [
+    'SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'NOT', 'IN', 'BETWEEN', 'LIKE',
+    'ORDER', 'BY', 'ASC', 'DESC', 'GROUP', 'HAVING', 'LIMIT', 'OFFSET',
+    'JOIN', 'INNER', 'LEFT', 'RIGHT', 'OUTER', 'FULL', 'CROSS', 'ON',
+    'INSERT', 'INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE', 'TRUNCATE',
+    'CREATE', 'ALTER', 'DROP', 'TABLE', 'INDEX', 'VIEW', 'DATABASE',
+    'PRIMARY', 'KEY', 'FOREIGN', 'REFERENCES', 'UNIQUE', 'CHECK', 'DEFAULT',
+    'NULL', 'IS', 'AS', 'DISTINCT', 'ALL', 'ANY', 'EXISTS',
+    'UNION', 'INTERSECT', 'EXCEPT', 'CASE', 'WHEN', 'THEN', 'ELSE', 'END',
+    'FIRST', 'SKIP', 'ROWS', 'TO', 'FETCH', 'NEXT', 'ONLY',
+    'CAST', 'COALESCE', 'NULLIF', 'EXTRACT', 'POSITION', 'SUBSTRING',
+    'UPPER', 'LOWER', 'TRIM', 'LTRIM', 'RTRIM', 'REPLACE', 'CONCAT',
+    'FOR', 'WITH', 'RECURSIVE'
+];
+
+// НАЗВАНИЯ ТАБЛИЦ - зеленый подчеркнутый (добавляйте сюда свои таблицы)
+var SQL_TABLES = [
+    'EMPLOYEE', 'DEPARTMENT', 'COUNTRY', 'CUSTOMER', 'JOB', 
+    'PROJECT', 'PROJ_DEPT_BUDGET', 'EMPLOYEE_PROJECT', 
+    'SALARY_HISTORY', 'SALES'
+];
+
+// АГРЕГАТНЫЕ И ВСТРОЕННЫЕ ФУНКЦИИ - фиолетовый
+var SQL_FUNCTIONS = [
+    'COUNT', 'SUM', 'AVG', 'MIN', 'MAX', 
+    'ROUND', 'FLOOR', 'CEILING', 'ABS', 'MOD',
+    'YEAR', 'MONTH', 'DAY', 'HOUR', 'MINUTE', 'SECOND',
+    'CURRENT_DATE', 'CURRENT_TIME', 'CURRENT_TIMESTAMP',
+    'CHAR_LENGTH', 'CHARACTER_LENGTH', 'OCTET_LENGTH', 'BIT_LENGTH'
+];
+
+function highlightSQL(text) {
+    if (!text) return '';
     
-    topicHeaders.forEach(header => {
-        header.addEventListener('click', function() {
-            const topicItem = this.parentElement;
-            const tasksList = topicItem.querySelector('.tasks-list');
-            const isActive = topicItem.classList.contains('active');
+    var result = text;
+    
+    // Экранируем HTML
+    result = result.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    
+    // Сохраняем строки в кавычках (голубой)
+    var strings = [];
+    result = result.replace(/'([^']*)'/g, function(match, p1) {
+        strings.push(match);
+        return '__STRING_' + (strings.length - 1) + '__';
+    });
+    
+    // Сохраняем комментарии (синий)
+    var comments = [];
+    // Однострочные комментарии --
+    result = result.replace(/--.*$/gm, function(match) {
+        comments.push(match);
+        return '__COMMENT_' + (comments.length - 1) + '__';
+    });
+    // Многострочные комментарии /* */
+    result = result.replace(/\/\*[\s\S]*?\*\//g, function(match) {
+        comments.push(match);
+        return '__COMMENT_' + (comments.length - 1) + '__';
+    });
+    
+    // Подсвечиваем функции (фиолетовый)
+    for (var f = 0; f < SQL_FUNCTIONS.length; f++) {
+        var func = SQL_FUNCTIONS[f];
+        var regex = new RegExp('\\b(' + func + ')\\s*\\(', 'gi');
+        result = result.replace(regex, '<span class="sql-function">$1</span>(');
+    }
+    
+    // Подсвечиваем ключевые слова (жирный синий)
+    for (var k = 0; k < SQL_KEYWORDS.length; k++) {
+        var keyword = SQL_KEYWORDS[k];
+        var regex = new RegExp('\\b(' + keyword + ')\\b', 'gi');
+        result = result.replace(regex, '<span class="sql-keyword">$1</span>');
+    }
+    
+    // Подсвечиваем таблицы (зеленый подчеркнутый)
+    for (var t = 0; t < SQL_TABLES.length; t++) {
+        var table = SQL_TABLES[t];
+        var regex = new RegExp('\\b(' + table + ')\\b', 'gi');
+        result = result.replace(regex, '<span class="sql-table">$1</span>');
+    }
+    
+    // Подсвечиваем числа (красно-оранжевый)
+    result = result.replace(/\b(\d+\.?\d*)\b/g, '<span class="sql-number">$1</span>');
+    
+    // Восстанавливаем комментарии
+    for (var i = 0; i < comments.length; i++) {
+        result = result.replace('__COMMENT_' + i + '__', '<span class="sql-comment">' + comments[i] + '</span>');
+    }
+    
+    // Восстанавливаем строки
+    for (var i = 0; i < strings.length; i++) {
+        result = result.replace('__STRING_' + i + '__', '<span class="sql-string">' + strings[i] + '</span>');
+    }
+    
+    return result;
+}
+
+function updateHighlight() {
+    var textarea = document.getElementById('sql_query');
+    var highlights = document.getElementById('sql-highlights');
+    
+    if (textarea && highlights) {
+        highlights.innerHTML = highlightSQL(textarea.value) + '\n';
+        
+        // Синхронизируем прокрутку
+        highlights.scrollTop = textarea.scrollTop;
+        highlights.scrollLeft = textarea.scrollLeft;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var textarea = document.getElementById('sql_query');
+    
+    if (textarea) {
+        // Обновляем подсветку при вводе
+        textarea.addEventListener('input', updateHighlight);
+        textarea.addEventListener('scroll', function() {
+            var highlights = document.getElementById('sql-highlights');
+            if (highlights) {
+                highlights.scrollTop = this.scrollTop;
+                highlights.scrollLeft = this.scrollLeft;
+            }
+        });
+        
+        // Начальная подсветка
+        updateHighlight();
+    }
+    
+    // Переключение тем
+    var topicHeaders = document.querySelectorAll('.topic-header');
+    
+    for (var i = 0; i < topicHeaders.length; i++) {
+        topicHeaders[i].addEventListener('click', function() {
+            var topicItem = this.parentElement;
+            var tasksList = topicItem.querySelector('.tasks-list');
+            var isActive = topicItem.classList.contains('active');
             
             // Закрываем все темы
-            document.querySelectorAll('.topic-item').forEach(item => {
-                item.classList.remove('active');
-                item.querySelector('.tasks-list').style.display = 'none';
-            });
+            var allTopics = document.querySelectorAll('.topic-item');
+            for (var j = 0; j < allTopics.length; j++) {
+                allTopics[j].classList.remove('active');
+                allTopics[j].querySelector('.tasks-list').style.display = 'none';
+            }
             
             // Открываем текущую тему если она была закрыта
             if (!isActive) {
@@ -690,26 +853,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 tasksList.style.display = 'block';
             }
         });
-    });
+    }
     
     // Выбор задания
-    const taskItems = document.querySelectorAll('.task-item');
+    var taskItems = document.querySelectorAll('.task-item');
     
-    taskItems.forEach(item => {
-        item.addEventListener('click', function() {
-            const topic = this.getAttribute('data-topic');
-            const task = this.getAttribute('data-task');
+    for (var i = 0; i < taskItems.length; i++) {
+        taskItems[i].addEventListener('click', function() {
+            var topic = this.getAttribute('data-topic');
+            var task = this.getAttribute('data-task');
             
-            // Обновляем URL с перезагрузкой страницы для правильной работы
-            const url = new URL(window.location);
+            var url = new URL(window.location);
             url.searchParams.set('topic', topic);
             url.searchParams.set('task', task);
             window.location.href = url.toString();
         });
-    });
+    }
     
     // Автоматически открываем активную тему при загрузке
-    const activeTopic = document.querySelector('.topic-item.active');
+    var activeTopic = document.querySelector('.topic-item.active');
     if (activeTopic) {
         activeTopic.querySelector('.tasks-list').style.display = 'block';
     }

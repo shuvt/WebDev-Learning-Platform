@@ -13,14 +13,4 @@ require_once __DIR__ . '/templates/header.php';
     </div>
 </div>
 
-<div style="margin-top: 40px;">
-    <h2>Возможности платформы:</h2>
-    <ul style="margin-top: 15px; margin-left: 20px;">
-        <li>Уроки по PHP, SQL, HTML+CSS</li>
-        <li>Практические задания с автоматической проверкой</li>
-        <li>Создание реальных проектов</li>
-        <li>Отслеживание прогресса обучения</li>
-    </ul>
-</div>
-
 <?php require_once __DIR__ . '/templates/footer.php'; ?>

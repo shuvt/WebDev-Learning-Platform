@@ -35,7 +35,8 @@ try {
     }
     
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = $db->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
+    // Новые пользователи регистрируются как студенты (роль = 1)
+    $stmt = $db->prepare("INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, 1)");
     $stmt->execute([$username, $email, $hashed_password]);
     
     $_SESSION['message'] = 'Регистрация успешна! Теперь вы можете войти.';
