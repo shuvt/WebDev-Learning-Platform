@@ -28,7 +28,7 @@ require_once __DIR__ . '/templates/header.php';
         <div class="course-card">
             <h3>PHP Basics</h3>
             <p>Основы программирования на PHP</p>
-            <a href="#" class="btn" style="margin-top: 10px;">Скоро доступно</a>
+            <a href="/php-course.php" class="btn" style="margin-top: 10px;">Начать обучение</a>
         </div>
 
         <div class="course-card">
