@@ -14,6 +14,11 @@ require_once __DIR__ . '/templates/header.php';
 <div class="auth-container">
     <h2>Регистрация в платформе</h2>
     
+    <?php if (isset($_SESSION['error'])): ?>
+        <div class="message error"><?= htmlspecialchars($_SESSION['error']) ?></div>
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
+    
     <form action="register_process.php" method="POST" class="auth-form">
         <div class="form-group">
             <label for="username">Логин:</label>

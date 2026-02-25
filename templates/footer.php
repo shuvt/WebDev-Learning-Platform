@@ -1,12 +1,3 @@
-<?php
-// templates/footer.php
-?>
-    </div> 
-    
-    <footer>
-        <div class="container">
-            <p>&copy;<?= SITE_NAME ?></p>
-        </div>
-    </footer>
+    </main>
 </body>
 </html>

@@ -1,7 +1,3 @@
-<?php
-// templates/header.php
-ob_start();
-?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -9,141 +5,172 @@ ob_start();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= SITE_NAME ?></title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { 
-            height: 100%; 
-            font-family: Arial, sans-serif; 
-            background: rgb(224, 217, 217);
-            color: rgba(38, 76, 73, 1);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
+        
         body {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: rgb(248, 248, 248);
+            color: rgb(67, 35, 35);
+            line-height: 1.6;
         }
-        .header {
-            background: rgb(47, 87, 85);
-            color: rgb(224, 217, 217);
-            padding: 1rem 0;
-            flex-shrink: 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
+        
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 20px;
         }
-        .nav { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
+        
+        header {
+            background: linear-gradient(135deg, rgb(47, 87, 85), rgb(90, 150, 144));
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .logo { 
-            font-size: 1.5rem; 
-            font-weight: bold; 
-            color: rgb(224, 217, 217);
+        
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .nav-links a { 
-            color: rgb(224, 217, 217); 
-            text-decoration: none; 
+        
+        header h1 {
+            font-size: 1.5rem;
+        }
+        
+        header h1 a {
+            color: white;
+            text-decoration: none;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
             margin-left: 20px;
-            padding: 8px 16px;
+            padding: 8px 15px;
             border-radius: 5px;
             transition: background 0.3s;
         }
-        .nav-links a:hover { 
-            background: rgb(90, 150, 144);
-            text-decoration: none;
+        
+        nav a:hover {
+            background: rgba(255,255,255,0.2);
         }
-        .main { 
-            flex: 1;
-            padding: 2rem 0; 
+        
+        main {
+            padding: 40px 0;
         }
+        
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(67, 35, 35, 0.1);
+        }
+        
+        .hero h1 {
+            color: rgb(47, 87, 85);
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
         .btn {
+            display: inline-block;
             background: rgb(47, 87, 85);
-            color: rgb(224, 217, 217);
-            padding: 12px 24px;
+            color: white;
+            padding: 12px 25px;
             border: none;
             border-radius: 8px;
-            cursor: pointer;
             text-decoration: none;
-            display: inline-block;
             font-size: 16px;
-            transition: all 0.3s;
-            font-weight: bold;
-        }
-        .btn:hover { 
-            background: rgb(90, 150, 144);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        .message {
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 8px;
-            border-left: 5px solid;
-        }
-        .success { 
-            background: rgba(90, 150, 144, 0.1); 
-            color: rgb(47, 87, 85); 
-            border-left-color: rgb(90, 150, 144);
-        }
-        .error { 
-            background: rgba(47, 87, 85, 0.1); 
-            color: rgb(47, 87, 85); 
-            border-left-color: rgb(47, 87, 85);
-        }
-        footer {
-            background: rgb(47, 87, 85);
-            color: rgb(224, 217, 217);
-            padding: 2rem 0;
-            text-align: center;
-            flex-shrink: 0;
-            margin-top: auto;
+            cursor: pointer;
+            transition: background 0.3s;
         }
         
+        .btn:hover {
+            background: rgb(90, 150, 144);
+        }
+        
+        /* Стили для форм авторизации */
         .auth-container {
             max-width: 400px;
-            margin: 40px auto;
-            padding: 40px;
+            margin: 0 auto;
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(67, 35, 35, 0.1);
-            border: 1px solid rgba(67, 35, 35, 0.1);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(67, 35, 35, 0.1);
         }
         
-        .auth-form .form-group {
+        .auth-container h2 {
+            color: rgb(47, 87, 85);
             margin-bottom: 25px;
+            text-align: center;
         }
         
-        .auth-form label {
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
             display: block;
             margin-bottom: 8px;
-            font-weight: bold;
-            color: rgb(47, 87, 85);
+            font-weight: 500;
+            color: rgb(67, 35, 35);
         }
         
-        .auth-form input {
+        .form-group input {
             width: 100%;
-            padding: 12px 15px;
+            padding: 12px;
             border: 2px solid rgb(224, 217, 217);
             border-radius: 8px;
             font-size: 16px;
             transition: border 0.3s;
         }
         
-        .auth-form input:focus {
+        .form-group input:focus {
             border-color: rgb(90, 150, 144);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(90, 150, 144, 0.1);
+        }
+        
+        .auth-form .btn {
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .message {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .message.success {
+            background: rgba(90, 150, 144, 0.1);
+            color: rgb(47, 87, 85);
+            border: 1px solid rgb(90, 150, 144);
+        }
+        
+        .message.error {
+            background: rgba(220, 53, 69, 0.1);
+            color: #721c24;
+            border: 1px solid #dc3545;
+        }
+        
+        /* Стили для курсов */
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
         }
         
         .course-card {
             background: white;
             padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(47, 87, 85);
-            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(67, 35, 35, 0.1);
             border-left: 5px solid rgb(90, 150, 144);
             transition: transform 0.3s;
         }
@@ -156,35 +183,40 @@ ob_start();
             color: rgb(47, 87, 85);
             margin-bottom: 10px;
         }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: rgb(100, 100, 100);
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
+    <header>
         <div class="container">
-            <div class="nav">
-                <div class="logo"><?= SITE_NAME ?></div>
-                <div class="nav-links">
-                    <?php if (isset($_SESSION['user_id'])): ?>
-                        <a href="/dashboard.php">Личный кабинет</a>
-                        <a href="/courses.php">Обучение</a>
-                        <a href="/logout.php">Выйти</a>
-                    <?php else: ?>
-                        <a href="/login.php">Войти</a>
-                        <a href="/register.php">Регистрация</a>
-                    <?php endif; ?>
-                </div>
-            </div>
+            <h1><a href="/">WebDev Самоучитель</a></h1>
+            <nav>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <a href="/dashboard.php">Личный кабинет</a>
+                    <a href="/courses.php">Курсы</a>
+                    <a href="/sql-practice.php">Практика SQL</a>
+                    <a href="/logout.php">Выйти</a>
+                <?php else: ?>
+                    <a href="/login.php">Войти</a>
+                    <a href="/register.php">Регистрация</a>
+                <?php endif; ?>
+            </nav>
         </div>
-    </div>
+    </header>
     
-    <div class="container main">
-        <?php
-        if (isset($_SESSION['message'])): ?>
-            <div class="message success"><?= $_SESSION['message'] ?></div>
+    <main class="container">
+        <?php if (isset($_SESSION['message'])): ?>
+            <div class="message success"><?= htmlspecialchars($_SESSION['message']) ?></div>
             <?php unset($_SESSION['message']); ?>
         <?php endif; ?>
         
         <?php if (isset($_SESSION['error'])): ?>
-            <div class="message error"><?= $_SESSION['error'] ?></div>
+            <div class="message error"><?= htmlspecialchars($_SESSION['error']) ?></div>
             <?php unset($_SESSION['error']); ?>
         <?php endif; ?>

@@ -12,6 +12,11 @@ if (!isLoggedIn()) {
 
 $user = getCurrentUser();
 require_once __DIR__ . '/templates/header.php';
+
+define('TAB1', '&nbsp;&nbsp;&nbsp;&nbsp;');
+define('TAB2', '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+define('SPACE', '&nbsp;&nbsp;');
+
 ?>
 
 <div class="course-container">
@@ -48,7 +53,7 @@ require_once __DIR__ . '/templates/header.php';
                 <div class="text-content">
                     <p>Добро пожаловать в курс <strong>SQL Basics</strong>! Этот курс познакомит вас с основами языка запросов SQL и работой с базами данных Firebird.</p>
                     <p>В ходе обучения вы освоите основные конструкции SQL, научитесь создавать запросы, работать с таблицами и управлять данными.</p>
-                    <p>Если вы уже знакомы с основами SQL - можете сразу перейти к <a href="#practice">практическим заданиям</a>. Для новичков рекомендуется пройти весь курс последовательно, чтобы закрепить знания на практике.</p>
+                    <p>Если вы уже знакомы с основами SQL - можете сразу перейти к <a href="#practice">практическим заданиям</a>. Для новичков рекомендуется пройти весь курс и в конце закрепить знания на практике.</p>
                 </div>
             </section>
 
@@ -179,11 +184,12 @@ require_once __DIR__ . '/templates/header.php';
                         </table>
                         <p>Пример базового SQL-запроса: </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT column1, column2<br>
-                                FROM table_name<br>
-                                WHERE condition<br>
-                                ORDER BY column1;
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.1. Пример базового SQL-запроса</strong><br>
+                                <?= TAB1 ?>SELECT column1, column2<br>
+                                <?= TAB1 ?>FROM table_name<br>
+                                <?= TAB1 ?>WHERE condition<br>
+                                <?= TAB1 ?>ORDER BY column1;
                             </p>
                         </div>
                         <h4 style="margin-top: 2em">1.2.2. Команды (SELECT), Условия (WHERE), Сортировка данных (ORDER BY)</h4>
@@ -198,52 +204,58 @@ require_once __DIR__ . '/templates/header.php';
                             <strong>Все следующие примеры будут на основе базы данных employee.fdb, которая находится в дистрибутиве Firebird!</strong>
                         </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT *<br>
-                                FROM EMPLOYEE;
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.2. Простой SQL запрос</strong><br>
+                                <?= TAB1 ?>SELECT *<br>
+                                <?= TAB1 ?>FROM EMPLOYEE;
                             </p>
                         </div>
                         <p>В этом запросе предложение from перечисляет одну таблицу (EMPLOYEE), а предложение select указывает, что в результирующий набор должны быть включены все столбцы (что обозначено с помощью *) таблицы. Таким образом, этот запрос может быть интерпретирован на обычном языке как: Покажи мне все столбцы и все строки таблицы EMPLOYEE.<br> Вместо использования символа звездочки (*) для обозначения всех столбцов, можно также перечислить конкретные интересующие вас столбцы, например:</p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT FIRST_NAME, LAST_NAME <br>
-                                FROM EMPLOYEE;
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.3. Демонстрация запроса</strong><br>
+                                <?= TAB1 ?>SELECT FIRST_NAME, LAST_NAME<br>
+                                <?= TAB1 ?>FROM EMPLOYEE;
                             </p>
                         </div>
                         <p>Этот запрос вернет имена и фамилии всех сотрудников из таблицы employees.</p>
                         <p style="margin-bottom: 0.4em;"><strong>ПСЕВДОНИМЫ</strong></p>
                         <p>Хотя Firebird автоматически создает метки для столбцов, возвращаемых вашими запросами, вы можете задать для них собственные названия. Это можно сделать, используя псевдоним столбца после соответствующего элемента в операторе SELECT.</p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT FIRST_NAME AS ‘name’ <br>
-                                FROM EMPLOYEE;
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.4. Использование псевдонимов</strong><br>
+                                <?= TAB1 ?>SELECT FIRST_NAME AS 'name'<br>
+                                <?= TAB1 ?>FROM EMPLOYEE;
                             </p>
                         </div>
                         <p>В этом примере столбец first_name будет возвращен с псевдонимом "name".</p>
                         <p style="margin-bottom: 0.4em;"><strong>WHERE</strong></p>
                         <p>В некоторых случаях может потребоваться получить все строки из таблицы, особенно для небольших таблиц. Однако в большинстве случаев выбирать все строки из таблицы не требуется, а потому необходим способ отфильтровывать строки, которые не представляют интереса. В этом состоит работа предложения where. Например, чтобы выбрать всех сотрудников из отдела номер 5, мы можем использовать следующий запрос:</p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT *<br>
-                                FROM employee <br>
-                                WHERE dept_no = '5';
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.5. Пример использования where</strong><br>
+                                <?= TAB1 ?>SELECT *<br>
+                                <?= TAB1 ?>FROM employee <br>
+                                <?= TAB1 ?>WHERE dept_no = '5';
                             </p>
                         </div>
                         <p>С помощью операторов AND и OR можно отфильтровать строки сразу по нескольким условиям. Например, выберем сотрудников из отдела номер 5 принятых на работу в 1992 году:</p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT * <br>
-                                FROM employee <br>
-                                WHERE WHERE dept_no = '5' AND hire_date BETWEEN ’01.01.1992’ AND ’31.12.1992’;
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.6. Пример использования where вместе с and и or</strong><br>
+                                <?= TAB1 ?>SELECT * <br>
+                                <?= TAB1 ?>FROM employee<br>
+                                <?= TAB1 ?>WHERE dept_no = '5' AND hire_date BETWEEN '01.01.1992' AND '31.12.1992';
                             </p>
                         </div>
                         <p>При разделении условия с использованием оператора and, чтобы строка вошла в результирующий набор, все условия должны вычисляться как true. При использовании or для включения строки достаточно, чтобы значение true давало только одно из условий.</p>
                         <p>Когда необходимо использовать AND и OR в одном SQL-запросе, важно правильно расставить скобки, чтобы определить порядок выполнения условий. </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT * <br>
-                                FROM employee <br>
-                                WHERE (dept_no = '5' AND hire_date = ’01.01.2000’) OR (dept_no = '10');
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.7. Корректное расставление скобок</strong><br>
+                                <?= TAB1 ?>SELECT * <br>
+                                <?= TAB1 ?>FROM employee <br>
+                                <?= TAB1 ?>WHERE (dept_no = '5' AND hire_date = '01.01.2000') OR (dept_no = '10');
                             </p>
                         </div>
                         <p style="margin-bottom: 0.4em;"><strong>ORDER BY</strong></p>
@@ -251,12 +263,13 @@ require_once __DIR__ . '/templates/header.php';
                             ORDER BY позволяет сортировать результаты запроса по одному или нескольким столбцам. При этом можно указать порядок сортировки: по возрастанию (ASC) или по убыванию (DESC). Если порядок не указан, по умолчанию применяется сортировка по возрастанию.
                         </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT * <br>
-                                FROM employee <br>
-                                ORDER BY dept_no ASC, salary DESC;
-                            </p>
-                        </div>
+                        <p style="margin-bottom: 0em;">
+                            <strong>Листинг 1.8. Пример использования сортировок</strong><br>
+                            <?= TAB1 ?>SELECT * <br>
+                            <?= TAB1 ?>FROM employee<br>
+                            <?= TAB1 ?>ORDER BY dept_no ASC, salary DESC;
+                        </p>
+                    </div>
                     </div>
                 </article>
 
@@ -274,50 +287,55 @@ require_once __DIR__ . '/templates/header.php';
                             Рассмотрим запрос, который возвращает общее количество сотрудников в таблице employees.
                         </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT COUNT(*) AS total_employee<br>
-                                FROM employee;
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.9. Пример использования агрегатной функции COUNT</strong><br>
+                                <?= TAB1 ?>SELECT COUNT(*) AS total_employee<br>
+                                <?= TAB1 ?>FROM employee;
                             </p>
                         </div>
 
                         <p style="margin-bottom: 0.4em;"><strong>ДУБЛИКАТЫ</strong></p>
                         <p>В некоторых случаях запрос может возвращать повторяющиеся строки данных. Таблица employee содержит информацию о сотрудниках, включая их должности. Так как несколько сотрудников могут занимать одну и ту же должность, не исключено наличие дубликатов. Избавиться от дубликатов можно с помощью ключевого слова DISTINCT. </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT COUNT(DISTINCT job_code) AS unique_job_codes <br>
-                                FROM employee;
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.10 Получение всех уникальных должностей</strong><br>
+                                <?= TAB1 ?>SELECT COUNT(DISTINCT job_code) AS unique_job_codes <br>
+                                <?= TAB1 ?>FROM employee;
                             </p>
                         </div>
                         <p style="margin-bottom: 0.4em;"><strong>SUM</strong></p>
                         <p>Функция SUM суммирует значения в указанном столбце. Функции SUM() и AVG() применимы только к столбцам, содержащим числовые данные. </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT SUM(salary) AS total_salary <br>
-                                FROM employee;
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.11 Вычисление общей суммы зарплат всех сотрудников</strong><br>
+                                <?= TAB1 ?>SELECT SUM(salary) AS total_salary<br>
+                                <?= TAB1 ?>FROM employee;
                             </p>
                         </div>
                         <p style="margin-bottom: 0.4em;"><strong>AVG</strong></p>
                         <p>Функция AVG вычисляет среднее значение для указанного столбца. </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT AVG(salary) AS average_salary<br>
-                                FROM employee;
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.12 Вычисление средней зарплаты сотрудников</strong><br>
+                                <?= TAB1 ?>SELECT AVG(salary) AS average_salary<br>
+                                <?= TAB1 ?>FROM employee;
                             </p>
                         </div>
                         <p style="margin-bottom: 0.4em;"><strong>MIN</strong></p>
                         <p>Функция MIN возвращает минимальное значение в указанном столбце. Функции MIN() и MAX(), кроме числовых значений могут обрабатывать данные типа «дата–время». </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT MIN(salary) AS lowest_salary<br>
-                                FROM employee;
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.13 Применение агрегатной функции MIN</strong><br>
+                                <?= TAB1 ?>SELECT MIN(salary) AS lowest_salary<br>
+                                <?= TAB1 ?>FROM employee;
                             </p>
                         </div>
                         <p style="margin-bottom: 0.4em;"><strong>MAX</strong></p>
-                        <p>Функция MAX возвращает максимальное значение в указанном столбце. </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT MAX(salary) AS highest_salary<br>
-                                FROM employee;
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.14 Применение агрегатной функции MAX</strong><br>
+                                <?= TAB1 ?>SELECT MAX(salary) AS highest_salary<br>
+                                <?= TAB1 ?>FROM employee;
                             </p>
                         </div>
 
@@ -331,21 +349,23 @@ require_once __DIR__ . '/templates/header.php';
                             <li>Каждая сформированная группа уникальна, что исключает возможность дублирования, и, следовательно, применение оператора DISTINCT становится нецелесообразным.</li>
                         </ul>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT dept_no, AVG (salary) AS avg_salary<br>
-                                FROM employee<br>
-                                GROUP BY dept_no;
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.15 Вычисление средней зарплаты сотрудников по отделам</strong><br>
+                                <?= TAB1 ?>SELECT dept_no, AVG(salary) AS avg_salary<br>
+                                <?= TAB1 ?>FROM employee<br>
+                                <?= TAB1 ?>GROUP BY dept_no
                             </p>
                         </div>
 
                         <h4>1.3.3. Использование HAVING для фильтрации агрегированных данных</h4>
                         <p>При группировке данных также можно применить фильтрующее условие HAVING к данным после того, как были сгенерированы группы. Это позволяет отфильтровывать группы на основе агрегированных значений, в отличие от оператора WHERE, который фильтрует строки перед агрегацией. </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT dept_no, AVG (salary) AS avg_salary<br>
-                                FROM employee<br>
-                                GROUP BY dept_no;<br>
-                                HAVING AVG(salary) > 100000
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.16 Применение фильтрующего условия</strong><br>
+                                <?= TAB1 ?>SELECT dept_no, AVG(salary) AS avg_salary<br>
+                                <?= TAB1 ?>FROM employee<br>
+                                <?= TAB1 ?>GROUP BY dept_no<br>
+                                <?= TAB1 ?>HAVING AVG(salary) > 100000
                             </p>
                         </div>
                     </div>
@@ -359,29 +379,30 @@ require_once __DIR__ . '/templates/header.php';
                         <p><strong>Соединения в SQL</strong> — это инструмент для соединения двух и более таблиц по условию.</p>
                         <p>Синтаксис оператора JOIN c ON</p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT названия_столбцов <br>
-                                FROM название_таблцы_1 JOIN название_таблицы_2 <br>
-                                ON условие
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.17 Синтаксис оператора JOIN c ON</strong><br>
+                                <?= TAB1 ?>SELECT названия_столбцов <br>
+                                <?= TAB2 ?>FROM название_таблицы_1 JOIN название_таблицы_2 <br>
+                                <?= TAB2 ?>ON условие
                             </p>
                         </div>
                         <p>Синтаксис оператора JOIN c USING</p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT названия_столбцов <br>
-                                FROM название_таблцы_1 JOIN название_таблицы_2 USING <br>
-                                (условие)
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.18 Синтаксис оператора JOIN c USING</strong><br>
+                                <?= TAB1 ?>SELECT названия_столбцов <br>
+                                <?= TAB2 ?>FROM название_таблицы_1 JOIN название_таблицы_2 USING (условие)
                             </p>
                         </div>
                         <p style="margin-bottom: 0.4em;"><strong>Внутреннее соединение </strong></p>
                         <p><strong>INNER JOIN, JOIN</strong> — соединение по умолчанию, из таблиц выделяются все возможные пары, для которых условие соединения истинно. </p>
                         <img src="/images/inner_join.png" alt="Структуры баз данных" style="width: 250px; height: auto;margin-left: 40px;margin-bottom:2em; margin-top:1em">
-                        <p>Пример с соединением таблиц employee и department</p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT e.first_name, e.last_name, d.department <br>
-                                FROM employee e INNER JOIN department d <br>
-                                ON e.dept_no = d.dept_no
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.19 Пример с соединением таблиц employee и department</strong><br>
+                                <?= TAB1 ?>SELECT e.first_name, e.last_name, d.department<br>
+                                <?= TAB1 ?>FROM employee e INNER JOIN department d<br>
+                                <?= TAB1 ?>ON e.dept_no = d.dept_no
                             </p>
                         </div>
 
@@ -390,10 +411,11 @@ require_once __DIR__ . '/templates/header.php';
                         <img src="/images/left_join.png" alt="Структуры баз данных" style="width: 250px; height: auto;margin-left: 40px;margin-bottom:2em; margin-top:1em">
                         <p>Изменим внутреннее из прошлого примера на LEFT JOIN. Теперь, если у сотрудника нет соответствующего отдела, в результате будет NULL для столбца department. </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT e.first_name, e.last_name, d.department <br>
-                                FROM employee e LEFT JOIN department d <br>
-                                ON e.dept_no = d.dept_no
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.20 Левое внешнее соединение таблиц employee и department</strong><br>
+                                <?= TAB1 ?>SELECT e.first_name, e.last_name, d.department<br>
+                                <?= TAB1 ?>FROM employee e LEFT JOIN department d<br>
+                                <?= TAB1 ?>ON e.dept_no = d.dept_no;
                             </p>
                         </div>
 
@@ -402,12 +424,13 @@ require_once __DIR__ . '/templates/header.php';
                         <img src="/images/right_join.png" alt="Структуры баз данных" style="width: 250px; height: auto;margin-left: 40px;margin-bottom:2em; margin-top:1em">
                         <p>Если в прошлом примере использовать RIGHT JOIN вместо LEFT JOIN и в таблице department не будет соответствующего сотрудника, для столбцов из таблицы employee в результате будет NULL-значение. </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT e.first_name, e.last_name, d.department <br>
-                                FROM employee e RIGHT JOIN department d <br>
-                                ON e.dept_no = d.dept_no
-                            </p>
-                        </div>
+                        <p style="margin-bottom: 0em;">
+                            <strong>Листинг 1.21 Правое внешнее соединение таблиц employee и department</strong><br>
+                            <?= TAB1 ?>SELECT e.first_name, e.last_name, d.department<br>
+                            <?= TAB1 ?>FROM employee e RIGHT JOIN department d<br>
+                            <?= TAB1 ?>ON e.dept_no = d.dept_no;
+                        </p>
+                    </div>
 
                         <p style="margin-bottom: 0.4em;"><strong>Полное соединение </strong></p>
                         <p><strong>FULL JOIN</strong>— представляет собой результат объединения левого и правого соединения</p>
@@ -417,22 +440,24 @@ require_once __DIR__ . '/templates/header.php';
                         <p>Оператор <strong>UNION</strong> в SQL используется для объединения результатов двух или более запросов SELECT. Позволяет объединять строки из разных таблиц в один результирующий набор. </p>
                         <p>Синтаксис объединения</p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT column1, column2, ... <br>
-                                FROM table1 <br>
-                                UNION <br>
-                                SELECT column1, column2, ... <br>
-                                FROM table2;
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.22 Синтаксис объединения</strong><br>
+                                <?= TAB1 ?>SELECT column1, column2, ...<br>
+                                <?= TAB1 ?>FROM table1<br>
+                                <?= TAB1 ?>UNION<br>
+                                <?= TAB1 ?>SELECT column1, column2, ...<br>
+                                <?= TAB1 ?>FROM table2;
                             </p>
                         </div>
                         <p>Вывод имен заказчиков и работников</p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT first_name <br>
-                                FROM employee <br>
-                                UNION <br>
-                                SELECT contact_first <br>
-                                FROM customer;
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.23 Вывод имен заказчиков и работников</strong><br>
+                                <?= TAB1 ?>SELECT first_name<br>
+                                <?= TAB1 ?>FROM employee<br>
+                                <?= TAB1 ?>UNION<br>
+                                <?= TAB1 ?>SELECT contact_first<br>
+                                <?= TAB1 ?>FROM customer;
                             </p>
                         </div>
 
@@ -464,10 +489,11 @@ require_once __DIR__ . '/templates/header.php';
                         <h4>1.5.2. Некоррелированные подзапросы и дополнительные операторы к ним IN, ALL, ANY(SOME)</h4>
                         <p>Рассмотрим пример некоррелированного подзапроса</p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT emp_no, first_name, last_name <br>
-                                FROM employee <br>
-                                WHERE emp_no = (SELECT MAX(emp_no) FROM employee)
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.24 Пример некоррелированного подзапроса</strong><br>
+                                <?= TAB1 ?>SELECT emp_no, first_name, last_name<br>
+                                <?= TAB1 ?>FROM employee<br>
+                                <?= TAB1 ?>WHERE emp_no = (SELECT MAX(emp_no) FROM employee)
                             </p>
                         </div>
                         <p>Пример, показанный выше — некоррелированный подзапрос, который может быть выполнен отдельно и не ссылается ни на что из содержащей инструкции. Помимо того, что это некоррелированный подзапрос, данный пример также возвращает результирующий набор, содержащий только одну строку и один столбец. Этот тип подзапроса известен как скалярный подзапрос и может появляться на любой стороне условия, использующего обычные операторы сравнения (=, <,>, <=,>=)</p>
@@ -475,53 +501,57 @@ require_once __DIR__ . '/templates/header.php';
                         <p style="margin-bottom: 0.4em;"><strong>Операторы IN и NOT IN </strong></p>
                         <p>Хотя проверить на равенство одно значение с набором значений нельзя, можно проверить, входит ли конкретное значение в набор. Следующий пример (пусть и не использующий подзапрос) демонстрирует, как создать условие, которое использует оператор in для поиска для значения в наборе значений: </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT currency <br>
-                                FROM country <br>
-                                WHERE country IN ('Canada', 'USA');
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.25 Пример использования оператора IN</strong><br>
+                                <?= TAB1 ?>SELECT currency<br>
+                                <?= TAB1 ?>FROM country<br>
+                                <?= TAB1 ?>WHERE country IN ('Canada', 'USA');
                             </p>
                         </div>
                         <p>Выражение в левой части условия — столбец country, а в правой — набор строк. Оператор in проверяет, входит ли строка из столбца country в этот набор; если да, то условие выполняется и строка добавляется к результирующему набору.</p>
                         <p>Помимо проверки, имеется ли некоторое значение в наборе, вы можете проверить обратное, используя оператор not in.</p>
                         <p>В следующем примере оператор not in используется с подзапросом в правой части условия фильтра, чтобы получить все имена работников, работающих не в Канаде или США:</p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT first_name <br>
-                                FROM employee <br>
-                                WHERE job_country NOT IN <br>
-                                (SELECT country<br>
-                                FROM country <br>
-                                WHERE country IN ('Canada', 'USA'));
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.26 Пример использования оператора NOT IN</strong><br>
+                                <?= TAB1 ?>SELECT first_name<br>
+                                <?= TAB1 ?>FROM employee<br>
+                                <?= TAB1 ?>WHERE job_country NOT IN<br>
+                                <?= TAB2 ?>(SELECT country<br>
+                                <?= TAB2 ?>FROM country <br>
+                                <?= TAB2 ?>WHERE country IN ('Canada', 'USA'));
                             </p>
                         </div>
                         <p style="margin-bottom: 0.4em;"><strong>Оператор ALL </strong></p>
                         <p>В то время как оператор in используется, чтобы выяснить, имеется ли выражение в наборе выражений, оператор all позволяет сравнивать отдельное значение и каждое значение в наборе. Чтобы создать такое условие, нужно использовать один из операторов сравнения (=, <,>, и т.д.) в сочетании с оператором all. </p>
                         <p>Рассмотрим следующий пример в котором запрос находит всех сотрудников, чья зарплата больше, чем зарплата всех сотрудников в определенной стране, например, в США</p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT first_name <br>
-                                FROM employee <br>
-                                WHERE salary > ALL ( <br>
-                                SELECT salary<br>
-                                FROM employee <br>
-                                WHERE job_country = (SELECT c.country<br>
-                                FROM country c<br>
-                                WHERE c.country = 'USA'));
-                            </p>
-                        </div>
+                        <p style="margin-bottom: 0em;">
+                            <strong>Листинг 1.27 Пример использования оператора ALL</strong><br>
+                            <?= TAB1 ?>SELECT first_name<br>
+                            <?= TAB1 ?>FROM employee<br>
+                            <?= TAB1 ?>WHERE salary > ALL (<br>
+                            <?= TAB2 ?>SELECT salary<br>
+                            <?= TAB2 ?>FROM employee<br>
+                            <?= TAB2 ?>WHERE job_country = (SELECT c.country<br>
+                            <?= TAB1 ?><?= TAB2 ?>FROM country c<br>
+                            <?= TAB1 ?><?= TAB2 ?>WHERE c.country = 'USA'));
+                        </p>
+                    </div>
                         <p style="margin-bottom: 0.4em;"><strong>Оператор ANY </strong></p>
                         <p>Как и оператор all, оператор any позволяет сравнивать значение с членами набора значений. В отличие от all, однако, условие, использующее оператор any, вычисляется как истинное, как только найдется хотя бы одно выполняющееся сравнение. </p>
                         <p>В приведенном далее примере выполняется поиск всех всех сотрудников, чья зарплата больше, чем зарплата хотя бы одного отрудника в США</p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT first_name <br>
-                                FROM employee <br>
-                                WHERE salary > ANY ( <br>
-                                SELECT salary<br>
-                                FROM employee <br>
-                                WHERE job_country = (SELECT c.country<br>
-                                FROM country c<br>
-                                WHERE c.country = 'USA'));
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.28 Пример использования оператора ANY</strong><br>
+                                <?= TAB1 ?>SELECT first_name<br>
+                                <?= TAB1 ?>FROM employee<br>
+                                <?= TAB1 ?>WHERE salary > ANY (<br>
+                                <?= TAB2 ?>SELECT salary<br>
+                                <?= TAB2 ?>FROM employee<br>
+                                <?= TAB2 ?>WHERE job_country = (SELECT c.country<br>
+                                <?= TAB1 ?><?= TAB2 ?>FROM country c<br>
+                                <?= TAB1 ?><?= TAB2 ?>WHERE c.country = 'USA'));
                             </p>
                         </div>
                         <p>Операторы ANY и SOME эквивалентны, т.е. результат их работы будет одинаковый.</p>
@@ -529,25 +559,27 @@ require_once __DIR__ . '/templates/header.php';
                         <h4>1.5.3 Коррелированные подзапросы. EXISTS, SINGULAR </h4>
                         <p>Все подзапросы, показанные до этого, не зависели от содержащихся в них операторов, Это означает, что вы можете выполнить их автономно и проверить возвращаемые ими результаты. Коррелированный же подзапрос зависит от содержащей его инструкции, ссылаясь на один или несколько ее столбцов. В отличие от некоррелированного подзапроса, коррелированный подзапрос не выполняется один раз перед выполнением содержащей его инструкции. Вместо этого коррелированный подзапрос выполняется по одному разу для каждой строки, которая может быть включена в окончательный результат</p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT e.full_name, e.salary, <br>
-                                (SELECT MAX(e2.salary) <br>
-                                FROM employee e2 <br>
-                                WHERE e2.job_country = e.job_country) AS max_salary<br>
-                                FROM employee e
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.29 Пример коррелированного подзапроса</strong><br>
+                                <?= TAB1 ?>SELECT e.full_name, e.salary,<br>
+                                <?= TAB2 ?>(SELECT MAX(e2.salary)<br>
+                                <?= TAB2 ?>FROM employee e2<br>
+                                <?= TAB2 ?>WHERE e2.job_country = e.job_country) AS max_salary<br>
+                                <?= TAB1 ?>FROM employee e
                             </p>
                         </div>
                         <p>Запрос представленный выше выдаст справочную информацию о максимальной оплате в той стране, где работает сотрудник.</p>
                         <p style="margin-bottom: 0.4em;"><strong>Оператор EXISTS(NOT EXISTS) </strong></p>
                         <p>Оператор EXIST определяет, существует ли хотя бы одно значение в выходном результате подзапроса. Противоположным ему является NOT EXISTS.</p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT e.full_name <br>
-                                FROM employee e <br>
-                                WHERE EXISTS <br>
-                                (SELECT 1 <br>
-                                FROM project p<br>
-                                WHERE p.team_leader = e.emp_no);
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.30 Пример использования оператора EXIST</strong><br>
+                                <?= TAB1 ?>SELECT e.full_name<br>
+                                <?= TAB1 ?>FROM employee e<br>
+                                <?= TAB1 ?>WHERE EXISTS<br>
+                                <?= TAB2 ?>(SELECT 1 <br>
+                                <?= TAB2 ?>FROM project p<br>
+                                <?= TAB2 ?>WHERE p.team_leader = e.emp_no);
                             </p>
                         </div>
                         <p>Запрос выведет список сотрудников, которые являются руководителями проектов. </p>
@@ -555,13 +587,14 @@ require_once __DIR__ . '/templates/header.php';
                         <p style="margin-bottom: 0.4em;"><strong>Оператор SINGULAR </strong></p>
                         <p>Оператор SINGULAR проверяет, возвращает ли подзапрос в точности одно значение.</p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SELECT full_name <br>
-                                FROM employee e <br>
-                                WHERE SINGULAR <br>
-                                (SELECT * <br>
-                                FROM sales s<br>
-                                WHERE s.sales_rep = e.emp_no);
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.31 Пример использования оператора SINGULAR</strong><br>
+                                <?= TAB1 ?>SELECT full_name<br>
+                                <?= TAB1 ?>FROM employee e<br>
+                                <?= TAB1 ?>WHERE SINGULAR <br>
+                                <?= TAB2 ?>(SELECT * <br>
+                                <?= TAB2 ?>FROM sales s<br>
+                                <?= TAB2 ?>WHERE s.sales_rep = e.emp_no);
                             </p>
                         </div>
                         <p>Запрос выведет список сотрудников, которые оформили только один заказ.</p>
@@ -576,16 +609,17 @@ require_once __DIR__ . '/templates/header.php';
                         <p><strong>Хранимая процедура</strong> — это программный модуль, который может быть вызван с клиента, из другой процедуры, функции, выполнимого блока или триггера. Хранимые процедуры, хранимые функции, исполняемые блоки и триггеры пишутся на процедурном языке SQL (PSQL). Большинство операторов SQL доступно и в PSQL, иногда с ограничениями или расширениями. Заметными исключениями являются DDL и операторы управления транзакциями. Хранимые процедуры могут принимать и возвращать множество параметров.</p>
                         <p>Синтаксис процедуры:</p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                CREATE PROCEDURE <имя_процедуры> (<входные_параметры>) <br>
-                                        RETURNS (выходные_параметры) <br>
-                                        AS <br>
-                                        [<список_локальных_переменных>] <br>
-                                            BEGIN<br>
-                                            <код_процедуры> <br>
-                                                END
-                            </p>
-                        </div>
+                        <p style="margin-bottom: 0em;">
+                            <strong>Листинг 1.32 Синтаксис процедуры</strong><br>
+                            <?= TAB1 ?>CREATE PROCEDURE &lt;имя_процедуры&gt; (&lt;входные_параметры&gt;)<br>
+                            <?= TAB1 ?>RETURNS (выходные_параметры)<br>
+                            <?= TAB2 ?>AS<br>
+                            <?= TAB2 ?>[&lt;список_локальных_переменных&gt;]<br>
+                            <?= TAB2 ?>BEGIN<br>
+                            <?= TAB1 ?><?= TAB2 ?>&lt;код_процедуры&gt;<br>
+                            <?= TAB2 ?>END
+                        </p>
+                    </div>
                         <p>Существуют два вида хранимых процедур — выполняемые хранимые процедуры и селективные процедуры</p>
                         <ul style="margin-left: 20px;">
                             <li><strong>Выполняемые хранимые процедуры</strong>, осуществляют обработку данных, находящихся в базе данных. Эти процедуры могут получать входные параметры и возвращать одиночный набор выходных (RETURNS) параметров. Такие процедуры выполняются с помощью оператора EXECUTE PROCEDURE. </li>
@@ -596,12 +630,13 @@ require_once __DIR__ . '/templates/header.php';
                         <p>Такие процедуры могут выполнять какие-либо действия, которым не требуется входные данные для работы, и которым не требуется выдавать какой-либо результат</p>
                         <p>Пример процедуры без параметров</p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                create procedure test <br>
-                                as <br>
-                                begin <br>
-                                insert into testtable (field1) values (1); <br>
-                                end
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.33 Пример процедуры без параметров</strong><br>
+                                <?= TAB1 ?>create procedure test<br>
+                                <?= TAB1 ?>as<br>
+                                <?= TAB1 ?>begin<br>
+                                <?= TAB2 ?>insert into testtable (field1) values (1);<br>
+                                <?= TAB1 ?>end
                             </p>
                         </div>
                         <p>Каждый оператор в процедуре должен быть завершен символом ;
@@ -609,14 +644,15 @@ require_once __DIR__ . '/templates/header.php';
                         </p>
                         <p>Объявление локальных переменных в процедуре</p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                create procedure test <br>
-                                as <br>
-                                declare variable i int; <br>
-                                begin <br>
-                                i=1;<br>
-                                insert into testtable (field1) values (:i);<br>
-                                end
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.34 Объявление локальных переменных в процедуре</strong><br>
+                                <?= TAB1 ?>create procedure test<br>
+                                <?= TAB1 ?>as<br>
+                                <?= TAB1 ?>declare variable i int;<br>
+                                <?= TAB1 ?>begin<br>
+                                <?= TAB2 ?>i=1;<br>
+                                <?= TAB2 ?>insert into testtable (field1) values (:i);<br>
+                                <?= TAB1 ?>end
                             </p>
                         </div>
                         <p>Такие процедуры вызываются оператором </p>
@@ -627,22 +663,23 @@ require_once __DIR__ . '/templates/header.php';
                         </p>
                         <p>Пример селективной процедуры: </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                create procedure test <br>
-                                returns (n varchar(35))<br>
-                                as<br>
-                                declare variable ln varchar(20);<br>
-                                declare variable fn varchar(15);<br>
-                                begin<br>
-                                for select last_name, first_name<br>
-                                from employee<br>
-                                into :ln, :fn<br>
-                                do<br>
-                                begin<br>
-                                n=:fn ||' '|| :ln;<br>
-                                suspend;<br>
-                                end<br>
-                                end
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.35 Пример селективной процедуры</strong><br>
+                                <?= TAB1 ?>create procedure test<br>
+                                <?= TAB1 ?>returns (n varchar(35))<br>
+                                <?= TAB1 ?>as<br>
+                                <?= TAB1 ?>declare variable ln varchar(20);<br>
+                                <?= TAB1 ?>declare variable fn varchar(15);<br>
+                                <?= TAB1 ?>begin<br>
+                                <?= TAB2 ?>for select last_name, first_name<br>
+                                <?= TAB2 ?><?= TAB1 ?>from employee<br>
+                                <?= TAB2 ?><?= TAB1 ?>into :ln, :fn<br>
+                                <?= TAB2 ?>do<br>
+                                <?= TAB2 ?>begin<br>
+                                <?= TAB1 ?><?= TAB2 ?>n = :fn || ' ' || :ln;<br>
+                                <?= TAB1 ?><?= TAB2 ?>suspend;<br>
+                                <?= TAB2 ?>end<br>
+                                <?= TAB1 ?>end
                             </p>
                         </div>
                         <p>Процедура перебирает все записи таблицы employee и возвращает нам "склеенные" имя и фамилию сотрудников. Размер возвращаемой переменной n выбран как сумма размеров столбцов first_name и last_name таблицы empoyee и переменных ln и fn, чтобы во время обработки не возникло переполнения.</p>
@@ -660,18 +697,19 @@ require_once __DIR__ . '/templates/header.php';
                         <p><strong>Триггеры</strong> — это особые процедуры, которые автоматически выполняются при определенных событиях, таких как вставка, обновление или удаление записей. </p>
                         <p>Синтаксис триггера</p>
                         <div class="content-placeholder">
-                            <pre style="text-align: left; background: #f5f5f5; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 16px; line-height: 1.4; margin: 0;">
-CREATE TRIGGER trigname {
-FOR {tablename | viewname}
-[ACTIVE | INACTIVE]
-{BEFORE | AFTER} <mutation_list>
-    [POSITION number]
-    AS
-    [<declarations>]
-        BEGIN
-        [<PSQL_statements>]
-            END
-    </pre>
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.36 Синтаксис триггера</strong><br>
+                                <?= TAB1 ?>CREATE TRIGGER trigname {<br>
+                                <?= TAB2 ?>FOR {tablename | viewname}<br>
+                                <?= TAB2 ?>[ACTIVE | INACTIVE]<br>
+                                <?= TAB2 ?>{BEFORE | AFTER} &lt;mutation_list&gt;<br>
+                                <?= TAB2 ?>[POSITION number]<br>
+                                <?= TAB1 ?>AS<br>
+                                <?= TAB2 ?>[&lt;declarations&gt;]<br>
+                                <?= TAB1 ?>BEGIN<br>
+                                <?= TAB2 ?>[&lt;PSQL_statements&gt;]<br>
+                                <?= TAB1 ?>END
+                            </p>
                         </div>
                         <p>ACTIVE/ INACTIVE - Определяет, дает ли действие триггера эффект, когда тот запускается. По умолчанию ACTIVE</p>
                         <p>BEFORE/AFTER - Определяет, когда срабатывает триггер. До или после события.</p>
@@ -679,18 +717,19 @@ FOR {tablename | viewname}
                         <p>POSITION number - Определяет порядок в котором срабатывают триггеры. Триггер с меньшим номером срабатывает раньше.</p>
                         <p>Пример триггера. Логирование изменений в зарплате сотрудников:</p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                CREATE TRIGGER employee_salary_update<br>
-                                FOR employees<br>
-                                ACTIVE BEFORE UPDATE<br>
-                                AS<br>
-                                BEGIN<br>
-                                IF (NEW.salary <> OLD.salary) THEN<br>
-                                    BEGIN<br>
-                                    INSERT INTO employee_changes_log (employee_id, change_time, old_salary, new_salary)<br>
-                                    VALUES (OLD.id, CURRENT_TIMESTAMP, OLD.salary, NEW.salary);<br>
-                                    END<br>
-                                    END;
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.37 Пример триггера. Логирование изменений в зарплате сотрудников.</strong><br>
+                                <?= TAB1 ?>CREATE TRIGGER employee_salary_update<br>
+                                <?= TAB1 ?>FOR employees<br>
+                                <?= TAB1 ?>ACTIVE BEFORE UPDATE<br>
+                                <?= TAB1 ?>AS<br>
+                                <?= TAB1 ?>BEGIN<br>
+                                <?= TAB2 ?>IF (NEW.salary &lt;&gt; OLD.salary) THEN<br>
+                                <?= TAB2 ?>BEGIN<br>
+                                <?= TAB1 ?><?= TAB2 ?>INSERT INTO employee_changes_log (employee_id, change_time, old_salary, new_salary)<br>
+                                <?= TAB1 ?><?= TAB2 ?>VALUES (OLD.id, CURRENT_TIMESTAMP, OLD.salary, NEW.salary);<br>
+                                <?= TAB2 ?>END<br>
+                                <?= TAB1 ?>END;
                             </p>
                         </div>
 
@@ -700,47 +739,50 @@ FOR {tablename | viewname}
                         <p>Триггеры на вставку срабатывают, когда в таблицу добавляется новая запись. </p>
                         <p>Пример триггера на вставку:</p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                CREATE TRIGGER before_employee_insert<br>
-                                FOR employee<br>
-                                ACTIVE BEFORE INSERT<br>
-                                AS<br>
-                                BEGIN<br>
-                                IF (NEW.salary < 0) THEN<br>
-                                    BEGIN<br>
-                                    EXCEPTION ex_invalid_salary 'Зарплата не может быть отрицательной' ;<br>
-                                    END<br>
-                                    END;
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.38 Пример триггера на вставку</strong><br>
+                                <?= TAB1 ?>CREATE TRIGGER before_employee_insert<br>
+                                <?= TAB1 ?>FOR employee<br>
+                                <?= TAB1 ?>ACTIVE BEFORE INSERT<br>
+                                <?= TAB1 ?>AS<br>
+                                <?= TAB1 ?>BEGIN<br>
+                                <?= TAB2 ?>IF (NEW.salary &lt; 0) THEN<br>
+                                <?= TAB2 ?>BEGIN<br>
+                                <?= TAB1 ?><?= TAB2 ?>EXCEPTION ex_invalid_salary 'Зарплата не может быть отрицательной';<br>
+                                <?= TAB2 ?>END<br>
+                                <?= TAB1 ?>END;
                             </p>
                         </div>
                         <p style="margin-bottom: 0.4em;"><strong>Триггеры на обновление (UPDATE)</strong></p>
                         <p>Триггеры на обновление срабатывают, когда в таблице изменяется существующая запись. </p>
                         <p>Пример триггера на обновление: </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                CREATE TRIGGER after_employee_update<br>
-                                FOR employee<br>
-                                ACTIVE AFTER UPDATE<br>
-                                AS<br>
-                                BEGIN<br>
-                                INSERT INTO employee_changes_log (employee_id, change_time, old_salary, new_salary)<br>
-                                VALUES (OLD.id, CURRENT_TIMESTAMP, OLD.salary, NEW.salary);<br>
-                                END;
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.39 Пример триггера на обновления</strong><br>
+                                <?= TAB1 ?>CREATE TRIGGER after_employee_update<br>
+                                <?= TAB1 ?>FOR employee<br>
+                                <?= TAB1 ?>ACTIVE AFTER UPDATE<br>
+                                <?= TAB1 ?>AS<br>
+                                <?= TAB1 ?>BEGIN<br>
+                                <?= TAB2 ?>INSERT INTO employee_changes_log (employee_id, change_time, old_salary, new_salary)<br>
+                                <?= TAB2 ?>VALUES (OLD.id, CURRENT_TIMESTAMP, OLD.salary, NEW.salary);<br>
+                                <?= TAB1 ?>END;
                             </p>
                         </div>
                         <p style="margin-bottom: 0.4em;"><strong>Триггеры на удаление (DELETE)</strong></p>
                         <p>Триггеры на удаление срабатывают, когда запись удаляется из таблицы. </p>
                         <p>Пример триггера на удаление: </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                CREATE TRIGGER before_employee_delete<br>
-                                FOR employees<br>
-                                ACTIVE BEFORE DELETE<br>
-                                AS<br>
-                                BEGIN<br>
-                                INSERT INTO employee_deletion_log (employee_id, deletion_time)<br>
-                                VALUES (OLD.id, CURRENT_TIMESTAMP);<br>
-                                END;
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.40 Пример триггера на удаление</strong><br>
+                                <?= TAB1 ?>CREATE TRIGGER before_employee_delete<br>
+                                <?= TAB1 ?>FOR employees<br>
+                                <?= TAB1 ?>ACTIVE BEFORE DELETE<br>
+                                <?= TAB1 ?>AS<br>
+                                <?= TAB1 ?>BEGIN<br>
+                                <?= TAB2 ?>INSERT INTO employee_deletion_log (employee_id, deletion_time)<br>
+                                <?= TAB2 ?>VALUES (OLD.id, CURRENT_TIMESTAMP);<br>
+                                <?= TAB1 ?>END;
                             </p>
                         </div>
                     </div>
@@ -761,39 +803,41 @@ FOR {tablename | viewname}
                         </ol>
                         <p>Пример триггера на удаление. Попробовать изменить зарплату сотрудника, но откатить изменения в случае ошибки: </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                START TRANSACTION;<br>
-                                UPDATE EMPLOYEE<br>
-                                SET SALARY = SALARY * 1.15<br>
-                                WHERE EMP_NO = 3;<br>
-                                IF ((SELECT SALARY FROM EMPLOYEE WHERE EMP_NO = 3) > 100000) THEN<br>
-                                ROLLBACK;<br>
-                                ELSE<br>
-                                COMMIT;<br>
-                                END IF;
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.41 Пример триггера на удаление. Попробовать изменить зарплату сотрудника, но откатить изменения в случае ошибки.</strong><br>
+                                <?= TAB1 ?>START TRANSACTION;<br>
+                                <?= TAB1 ?>UPDATE EMPLOYEE<br>
+                                <?= TAB1 ?>SET SALARY = SALARY * 1.15<br>
+                                <?= TAB1 ?>WHERE EMP_NO = 3;<br>
+                                <?= TAB1 ?>IF ((SELECT SALARY FROM EMPLOYEE WHERE EMP_NO = 3) > 100000) THEN<br>
+                                <?= TAB2 ?>ROLLBACK;<br>
+                                <?= TAB1 ?>ELSE<br>
+                                <?= TAB2 ?>COMMIT;<br>
+                                <?= TAB1 ?>END IF;
                             </p>
                         </div>
 
                         <h4>1.8.2 Синтаксис и базовые операторы (COMMIT, ROLLBACK, SAVEPOINT) </h4>
                         <p>Синтаксис транзакции: </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SET TRANSACTION [NAME tr_name]<br>
-                                [READ WRITE | READ ONLY]<br>
-                                [[ISOLATION LEVEL] {<br>
-                                SNAPSHOT [TABLE STABILITY]<br>
-                                | READ COMMITTED [[NO] RECORD_VERSION] }]<br>
-                                [NO WAIT | WAIT [LOCK TIMEOUT seconds]]<br>
-                                [NO AUTO UNDO]<br>
-                                [IGNORE LIMBO]<br>
-                                [RESTART REQUESTS]<br>
-                                [RESERVING <tables> | USING <dbhandles>]<br>
-                                        <tables> ::= <table_spec> [, <table_spec> ...]<br>
-                                                    <table_spec> ::= tablename [, tablename ...]<br>
-                                                        [FOR [SHARED | PROTECTED] {READ | WRITE}]<br>
-                                                        <dbhandles> ::= dbhandle [, dbhandle ...]
-                            </p>
-                        </div>
+                        <p style="margin-bottom: 0em;">
+                            <strong>Листинг 1.42 Синтаксис транзакции</strong><br>
+                            <?= TAB1 ?>SET TRANSACTION [NAME tr_name]<br>
+                            <?= TAB2 ?>[READ WRITE | READ ONLY]<br>
+                            <?= TAB2 ?>[[ISOLATION LEVEL] {<br>
+                            <?= TAB1 ?><?= TAB2 ?>SNAPSHOT [TABLE STABILITY]<br>
+                            <?= TAB1 ?><?= TAB2 ?>| READ COMMITTED [[NO] RECORD_VERSION] }]<br>
+                            <?= TAB2 ?>[NO WAIT | WAIT [LOCK TIMEOUT seconds]]<br>
+                            <?= TAB2 ?>[NO AUTO UNDO]<br>
+                            <?= TAB2 ?>[IGNORE LIMBO]<br>
+                            <?= TAB2 ?>[RESTART REQUESTS]<br>
+                            <?= TAB2 ?>[RESERVING &lt;tables&gt; | USING &lt;dbhandles&gt;]<br>
+                            <?= TAB1 ?>&lt;tables&gt; ::= &lt;table_spec&gt; [, &lt;table_spec&gt; ...]<br>
+                            <?= TAB1 ?>&lt;table_spec&gt; ::= tablename [, tablename ...]<br>
+                            <?= TAB2 ?>[FOR [SHARED | PROTECTED] {READ | WRITE}]<br>
+                            <?= TAB1 ?>&lt;dbhandles&gt; ::= dbhandle [, dbhandle ...]
+                        </p>
+                    </div>
                         <p>Разберем некоторые параметры синтаксиса транзакций подробнее: </p>
                         <ul style="margin-left: 20px;">
                             <li>[READ WRITE | READ ONLY] - Определяет режим доступа транзакции. Чтение и запись / только чтение</li>
@@ -854,22 +898,23 @@ FOR {tablename | viewname}
                         <p><strong>SAVEPOINT</strong> — Создает точку сохранения внутри транзакции. </p>
                         <p>Пример транзакции. Изменение зарплаты: </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                SET TRANSACTION NAME update_salary_transaction<br>
-                                READ WRITE<br>
-                                ISOLATION LEVEL SNAPSHOT<br>
-                                WAIT LOCK TIMEOUT 10<br>
-                                RESERVING<br>
-                                EMPLOYEE FOR PROTECTED WRITE,<br>
-                                DEPARTMENT FOR PROTECTED WRITE;<br>
-
-                                UPDATE EMPLOYEE<br>
-                                SET SALARY = SALARY + 1000<br>
-                                WHERE EMP_NO = 10;<br>
-
-                                COMMIT;
-                            </p>
-                        </div>
+                        <p style="margin-bottom: 0em;">
+                            <strong>Листинг 1.43 Пример транзакции. Изменение зарплаты</strong><br>
+                            <?= TAB1 ?>SET TRANSACTION NAME update_salary_transaction<br>
+                            <?= TAB2 ?>READ WRITE<br>
+                            <?= TAB2 ?>ISOLATION LEVEL SNAPSHOT<br>
+                            <?= TAB2 ?>WAIT LOCK TIMEOUT 10<br>
+                            <?= TAB2 ?>RESERVING <br>
+                            <?= TAB1 ?><?= TAB2 ?>EMPLOYEE FOR PROTECTED WRITE,<br>
+                            <?= TAB1 ?><?= TAB2 ?>DEPARTMENT FOR PROTECTED WRITE;<br>
+                            <br>
+                            <?= TAB1 ?>UPDATE EMPLOYEE<br>
+                            <?= TAB1 ?>SET SALARY = SALARY + 1000<br>
+                            <?= TAB1 ?>WHERE EMP_NO = 10;<br>
+                            <br>
+                            <?= TAB1 ?>COMMIT;
+                        </p>
+                    </div>
                     </div>
                 </article>
 
@@ -890,12 +935,13 @@ FOR {tablename | viewname}
                         <p>Индекс создается с помощью оператора <strong>CREATE_INDEX</strong>.</p>
                         <p>Синтаксис создания индекса: </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                CREATE [UNIQUE] [ASC[ENDING] | DESC[ENDING]] <br>
-                                INDEX indexname ON tablename <br>
-                                {(col [, col …]) | COMPUTED BY (<expression>)};
-                            </p>
-                        </div>
+                        <p style="margin-bottom: 0em;">
+                            <strong>Листинг 1.44 Синтаксис создания индекса</strong><br>
+                            <?= TAB1 ?>CREATE [UNIQUE] [ASC[ENDING] | DESC[ENDING]] <br>
+                            <?= TAB1 ?>INDEX indexname ON tablename <br>
+                            <?= TAB1 ?>{(col [, col …]) | COMPUTED BY (&lt;expression&gt;)};
+                        </p>
+                    </div>
                         <p>Разберем синтаксис подробнее:</p>
                         <ul style="margin-left: 20px;">
                             <li>[UNIQUE] — Создает уникальный индекс.</li>
@@ -907,16 +953,19 @@ FOR {tablename | viewname}
                         <p>Команда <strong>ALTER INDEX</strong> используется для изменения свойств существующего индекса. </p>
                         <p>Примеры активации и деактивации индексов: </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                ALTER INDEX idx_last_name ACTIVE; <br>
-                                ALTER INDEX idx_last_name INACTIVE;
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.45 Примеры активации и деактивации индексов</strong><br>
+                                <?= TAB1 ?>ALTER INDEX idx_last_name ACTIVE;<br>
+                                <br>
+                                <?= TAB1 ?>ALTER INDEX idx_last_name INACTIVE;
                             </p>
                         </div>
                         <p>Команда <strong>SET STATISTICS</strong> используется для обновления статистики по таблицам и индексам. Статистика помогает оптимизатору запросов выбирать наиболее эффективный план выполнения запроса.</p>
                         <p>Команда <strong>DROP INDEX</strong> используется для удаления индекса из базы данных. </p>
                         <div class="content-placeholder">
-                            <p style="margin-bottom: 0em">
-                                DROP INDEX idx_last_name;
+                            <p style="margin-bottom: 0em;">
+                                <strong>Листинг 1.46 Примеры удаления индекса</strong><br>
+                                <?= TAB1 ?>DROP INDEX idx_last_name;
                             </p>
                         </div>
                         <p style="margin-bottom: 0.4em;"><strong>СЕЛЕКТИВНОСТЬ ИНДЕКСА</strong></p>
@@ -932,7 +981,6 @@ FOR {tablename | viewname}
                     <div class="practice-section">
                         <p>Практические задания по курсу SQL Basics</p>
                         <a href="/sql-practice.php" class="btn">Перейти к заданиям</a>
-                        <p class="note">(Страница с заданиями будет создана позже)</p>
                     </div>
                 </article>
             </section>
@@ -943,6 +991,7 @@ FOR {tablename | viewname}
 <style>
     /* CSS Version: <?= time() ?> */
     .course-container {
+        color: rgb(47, 87, 85);
         width: 1200px;
         margin: 0 auto;
         padding: 10px;
@@ -1000,6 +1049,8 @@ FOR {tablename | viewname}
     .toc-nav a:hover {
         color: rgb(90, 150, 144);
         border-left-color: rgb(90, 150, 144);
+        background-color: rgba(174, 216, 212, 0.1); 
+        border-radius: 4px;
     }
 
     .toc-nav ul ul {
@@ -1009,10 +1060,11 @@ FOR {tablename | viewname}
 
     .toc-nav ul ul a {
         font-size: 0.9rem;
-        color: rgb(100, 100, 100);
+        color: rgb(47, 87, 85);
     }
 
     .course-material {
+        color: rgb(47, 87, 85);
         background: white;
         padding: 30px;
         border-radius: 12px;
@@ -1049,11 +1101,11 @@ FOR {tablename | viewname}
     }
 
     .content-placeholder {
-        background: rgb(248, 248, 248);
+        background: rgb(243, 246, 246);
         padding: 20px;
         border-radius: 8px;
         border-left: 4px solid rgb(90, 150, 144);
-        color: rgb(100, 100, 100);
+        color: rgb(90, 150, 144, 0.93);
         font-style: italic;
         margin-bottom: 1em;
     }
