@@ -9,7 +9,7 @@ require_once __DIR__ . '/templates/header.php';
     <p>Интерактивная платформа для обучения веб-разработке</p>
     
     <div style="margin-top: 20px;">
-        <a href="/login.php" class="btn">Начать обучение</a>
+        <a href="/courses.php" class="btn">Начать обучение</a>
     </div>
 </div>
 

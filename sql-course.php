@@ -20,7 +20,7 @@ define('SPACE', '&nbsp;&nbsp;');
 ?>
 
 <div class="course-container">
-    <h1 style="margin-bottom:40px">SQL Basics</h1>
+    <h1 style="margin-bottom:40px">ОСНОВЫ SQL</h1>
 
     <div class="course-content">
         <div class="table-of-contents">
