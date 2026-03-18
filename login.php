@@ -32,7 +32,6 @@ require_once __DIR__ . '/templates/header.php';
     </form>
     
     <div style="margin-top: 20px; text-align: center;">
-        <p>Тестовый пользователь: <strong>admin</strong> / <strong>123456</strong></p>
         <p>Нет аккаунта? <a href="/register.php">Зарегистрируйтесь здесь</a></p>
     </div>
 </div>
