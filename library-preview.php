@@ -14,8 +14,6 @@ if (!isLoggedIn()) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Предпросмотр — Приложение «Библиотека»</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -94,16 +92,7 @@ if (!isLoggedIn()) {
             border-bottom: 1px solid rgba(255,255,255,0.08);
         }
 
-        .logo-icon {
-            width: 32px;
-            height: 32px;
-            background: rgba(255,255,255,0.12);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
+        .logo-icon { font-size: 28px; }
 
         .logo-icon svg { width: 18px; height: 18px; fill: #fff; }
 
@@ -380,7 +369,7 @@ if (!isLoggedIn()) {
 
 <div class="preview-header">
     <div class="preview-header-title">Предпросмотр приложения «Библиотека»</div>
-    <a href="/web-course.php#web10" class="preview-header-back">← Вернуться к курсу</a>
+    <a href="/web-course.php" class="preview-header-back">← Вернуться к курсу</a>
 </div>
 
 <div class="app-wrapper">
@@ -391,11 +380,7 @@ if (!isLoggedIn()) {
         <!-- Сайдбар -->
         <div class="sidebar">
             <div class="logo">
-                <div class="logo-icon">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>
-                    </svg>
-                </div>
+                <span class="logo-icon" style="filter: brightness(0) invert(1);">🕮</span>
                 <div>
                     <div class="logo-name">Библиотека</div>
                     <div class="logo-sub">Система управления</div>
@@ -403,35 +388,27 @@ if (!isLoggedIn()) {
             </div>
             <nav class="sidebar-nav" id="nav">
                 <div class="nav-item active" onclick="show('home')" data-page="home">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
                     Главная
                 </div>
                 <div class="nav-item" onclick="show('books')" data-page="books">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
                     Книги
                 </div>
                 <div class="nav-item" onclick="show('authors')" data-page="authors">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                     Авторы
                 </div>
                 <div class="nav-item" onclick="show('publishers')" data-page="publishers">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>
                     Издательства
                 </div>
                 <div class="nav-item" onclick="show('users')" data-page="users">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
                     Читатели
                 </div>
                 <div class="nav-item" onclick="show('copies')" data-page="copies">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
                     Экземпляры
                 </div>
                 <div class="nav-item" onclick="show('borrows')" data-page="borrows">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
                     Выдача
                 </div>
             </nav>
-            <div class="sidebar-date"><?= date('d.m.Y') ?></div>
         </div>
 
         <!-- Контент -->
@@ -456,9 +433,6 @@ const pages = {
   <div class="stat-card"><div class="stat-value">5</div><div class="stat-label">Авторов</div></div>
   <div class="stat-card"><div class="stat-value">7</div><div class="stat-label">Читателей</div></div>
   <div class="stat-card"><div class="stat-value">21</div><div class="stat-label">Экземпляров</div></div>
-  <div class="stat-card"><div class="stat-value">18</div><div class="stat-label">Доступно</div></div>
-  <div class="stat-card"><div class="stat-value">3</div><div class="stat-label">На руках</div></div>
-  <div class="stat-card danger"><div class="stat-value">1</div><div class="stat-label">Просрочено</div></div>
 </div>
 <div class="dash-row">
   <div class="widget">
@@ -589,7 +563,7 @@ const pages = {
       <tr><td class="td-m">2</td><td>Война и мир</td><td><span class="badge b-green">Доступна</span></td><td><button class="btn-sm" style="background:#e4f0fb;color:#2a7fc9;border-color:#b5d4f4">Выдать</button><button class="btn-sm">Ред.</button><button class="btn-sm btn-danger-sm">Удалить</button></td></tr>
       <tr><td class="td-m">3</td><td>Мастер и Маргарита</td><td><span class="badge b-blue">Выдана</span></td><td><button class="btn-sm">Ред.</button><button class="btn-sm btn-danger-sm">Удалить</button></td></tr>
       <tr><td class="td-m">4</td><td>Мастер и Маргарита</td><td><span class="badge b-green">Доступна</span></td><td><button class="btn-sm" style="background:#e4f0fb;color:#2a7fc9;border-color:#b5d4f4">Выдать</button><button class="btn-sm">Ред.</button><button class="btn-sm btn-danger-sm">Удалить</button></td></tr>
-      <tr><td class="td-m">5</td><td>Анна Каренина</td><td><span class="badge b-orange">Повреждена</span></td><td><button class="btn-sm">Ред.</button><button class="btn-sm btn-danger-sm">Удалить</button></td></tr>
+      <tr><td class="td-m">5</td><td>Анна Каренина</td><td><span class="badge b-green">Доступна</span></td><td><button class="btn-sm">Ред.</button><button class="btn-sm btn-danger-sm">Удалить</button></td></tr>
     </tbody>
   </table>
 </div>`

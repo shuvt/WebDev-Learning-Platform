@@ -3,6 +3,7 @@
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/toggle-topic.php'; 
 
 // Проверка авторизации
 if (!isLoggedIn()) {
@@ -19,9 +20,9 @@ define('SPACE', '&nbsp;&nbsp;');
 
 ?>
 
-<div class="course-container">
-    <h1 style="margin-bottom:40px">ОСНОВЫ SQL</h1>
+<link rel="stylesheet" href="/templates/course.css">
 
+<div class="course-container">
     <div class="course-content">
         <div class="table-of-contents">
             <h2>Содержание курса</h2>
@@ -49,11 +50,15 @@ define('SPACE', '&nbsp;&nbsp;');
         <div class="course-material">
             <!-- Введение -->
             <section id="introduction" class="chapter">
-                <h2>Введение</h2>
                 <div class="text-content">
                     <p>Добро пожаловать в курс <strong>SQL Basics</strong>! Этот курс познакомит вас с основами языка запросов SQL и работой с базами данных Firebird.</p>
                     <p>В ходе обучения вы освоите основные конструкции SQL, научитесь создавать запросы, работать с таблицами и управлять данными.</p>
-                    <p>Если вы уже знакомы с основами SQL - можете сразу перейти к <a href="#practice">практическим заданиям</a>. Для новичков рекомендуется пройти весь курс и в конце закрепить знания на практике.</p>
+                    
+                    <p style="line-height: 2.2;">Если вы уже знакомы с основами SQL - можете сразу перейти к 
+                    <a href="#practice" style="display: inline-block; background: rgba(90,150,144,0.18); color: rgb(37, 72, 70); padding: 0px 15px; border-radius: 30px; text-decoration: none; font-weight: 500; 
+                    font-size: 0.99rem; letter-spacing: 0.02em; margin: 0 2px; transition: all 0.2s ease; border: 1px solid transparent;" onmouseover="this.style.background='rgba(90,150,144,0.25)';
+                     this.style.borderColor='rgba(47,87,85,0.4)';" onmouseout="this.style.background='rgba(90,150,144,0.18)'; this.style.borderColor='transparent';">
+                     практическим заданиям</a>. Для новичков рекомендуется пройти весь курс и в конце закрепить знания на практике.</p>
                 </div>
             </section>
 
@@ -144,6 +149,8 @@ define('SPACE', '&nbsp;&nbsp;');
 
 
                     </div>
+                
+                <?= topicButton('sql', 'intro-db', 'basic-sql') ?>
                 </article>
 
                 <!-- 1.2 Основы SQL -->
@@ -200,7 +207,7 @@ define('SPACE', '&nbsp;&nbsp;');
                             Рассмотрим для начала такой запрос:
                         </p>
 
-                        <p style="padding: 15px; background: #fffbf5ff; font-style: italic; color: #a98a1aff;">
+                        <p style="padding: 15px; background: rgb(250, 240, 254); font-style: italic; color: rgb(150, 106, 194);">
                             <strong>Все следующие примеры будут на основе базы данных employee.fdb, которая находится в дистрибутиве Firebird!</strong>
                         </p>
                         <div class="content-placeholder">
@@ -271,6 +278,8 @@ define('SPACE', '&nbsp;&nbsp;');
                         </p>
                     </div>
                     </div>
+                
+                <?= topicButton('sql', 'basic-sql', 'aggregation') ?>
                 </article>
 
                 <!-- 1.3 Агрегация данных -->
@@ -369,6 +378,8 @@ define('SPACE', '&nbsp;&nbsp;');
                             </p>
                         </div>
                     </div>
+                
+                <?= topicButton('sql', 'aggregation', 'joins') ?>
                 </article>
 
                 <!-- 1.4 Соединение таблиц -->
@@ -462,6 +473,8 @@ define('SPACE', '&nbsp;&nbsp;');
                         </div>
 
                     </div>
+                
+                <?= topicButton('sql', 'joins', 'subqueries') ?>
                 </article>
 
                 <!-- 1.5 Подзапросы -->
@@ -599,6 +612,8 @@ define('SPACE', '&nbsp;&nbsp;');
                         </div>
                         <p>Запрос выведет список сотрудников, которые оформили только один заказ.</p>
                     </div>
+                
+                <?= topicButton('sql', 'subqueries', 'procedural') ?>
                 </article>
 
                 <!-- 1.6 Процедурное расширение -->
@@ -687,6 +702,8 @@ define('SPACE', '&nbsp;&nbsp;');
                         <p>Селективные процедуры нужно вызывать так:</p>
                         <p style="font-style: italic">select * from test </p>
                     </div>
+                
+                <?= topicButton('sql', 'procedural', 'triggers') ?>
                 </article>
 
                 <!-- 1.7 Триггеры -->
@@ -786,6 +803,8 @@ define('SPACE', '&nbsp;&nbsp;');
                             </p>
                         </div>
                     </div>
+                
+                <?= topicButton('sql', 'triggers', 'transactions') ?>
                 </article>
 
                 <!-- 1.8 Транзакции -->
@@ -916,6 +935,8 @@ define('SPACE', '&nbsp;&nbsp;');
                         </p>
                     </div>
                     </div>
+                
+                <?= topicButton('sql', 'transactions', 'indexes') ?>
                 </article>
 
                 <!-- 1.9 Индексы -->
@@ -973,6 +994,8 @@ define('SPACE', '&nbsp;&nbsp;');
                         <p><strong>Высокая</strong> — если значения в колонке почти уникальны. Например, колонка с email-адресами.</p>
                         <p><strong>Низкая</strong> — если значения в колонке повторяются. Например, колонка с полом (значения "М" и "Ж").</p>
                     </div>
+                
+                <?= topicButton('sql', 'indexes', 'practice') ?>
                 </article>
 
                 <!-- 1.10 Практические задания -->
@@ -982,182 +1005,12 @@ define('SPACE', '&nbsp;&nbsp;');
                         <p>Практические задания по курсу SQL Basics</p>
                         <a href="/sql-practice.php" class="btn">Перейти к заданиям</a>
                     </div>
+                
                 </article>
             </section>
         </div>
     </div>
 </div>
 
-<style>
-    /* CSS Version: <?= time() ?> */
-    .course-container {
-        color: rgb(47, 87, 85);
-        width: 1200px;
-        margin: 0 auto;
-        padding: 10px;
-    }
-
-    .course-description {
-        font-size: 1.2rem;
-        color: rgb(38, 76, 73, 1);
-        margin-bottom: 30px;
-        text-align: center;
-    }
-
-    .course-content {
-        display: grid;
-        grid-template-columns: 290px minmax(0, 1fr);
-        gap: 40px;
-    }
-
-    .table-of-contents {
-        background: white;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(67, 35, 35, 0.1);
-        height: fit-content;
-        position: sticky;
-        top: 20px;
-    }
-
-    .table-of-contents h2 {
-        color: rgb(47, 87, 85);
-        margin-bottom: 20px;
-        font-size: 1.3rem;
-    }
-
-    .toc-nav ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .toc-nav li {
-        margin-bottom: 8px;
-    }
-
-    .toc-nav a {
-        color: rgb(38, 76, 73, 1);
-        text-decoration: none;
-        padding: 5px 0;
-        display: block;
-        transition: color 0.3s;
-        border-left: 3px solid transparent;
-        padding-left: 10px;
-    }
-
-    .toc-nav a:hover {
-        color: rgb(90, 150, 144);
-        border-left-color: rgb(90, 150, 144);
-        background-color: rgba(174, 216, 212, 0.1); 
-        border-radius: 4px;
-    }
-
-    .toc-nav ul ul {
-        margin-left: 15px;
-        margin-top: 5px;
-    }
-
-    .toc-nav ul ul a {
-        font-size: 0.9rem;
-        color: rgb(47, 87, 85);
-    }
-
-    .course-material {
-        color: rgb(47, 87, 85);
-        background: white;
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(67, 35, 35, 0.1);
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    .chapter {
-        margin-bottom: 50px;
-    }
-
-    .chapter h2 {
-        color: rgb(47, 87, 85);
-        border-bottom: 3px solid rgb(90, 150, 144);
-        padding-bottom: 10px;
-        margin-bottom: 25px;
-    }
-
-    .lesson {
-        margin-bottom: 35px;
-        padding-bottom: 25px;
-        border-bottom: 1px solid rgb(224, 217, 217);
-    }
-
-    .lesson:last-child {
-        border-bottom: none;
-    }
-
-    .lesson h3 {
-        color: rgb(38, 76, 73, 1);
-        margin-bottom: 30px;
-        font-size: 1.2rem;
-    }
-
-    .content-placeholder {
-        background: rgb(243, 246, 246);
-        padding: 20px;
-        border-radius: 8px;
-        border-left: 4px solid rgb(90, 150, 144);
-        color: rgb(90, 150, 144, 0.93);
-        font-style: italic;
-        margin-bottom: 1em;
-    }
-
-    .practice-section {
-        text-align: center;
-        padding: 30px;
-        background: rgba(90, 150, 144, 0.1);
-        border-radius: 8px;
-        border: 2px dashed rgb(90, 150, 144);
-    }
-
-    .note {
-        font-size: 0.9rem;
-        color: rgb(100, 100, 100);
-        margin-top: 10px;
-    }
-
-    .text-content p {
-        margin-bottom: 1em;
-    }
-
-    .text-content h4 {
-        margin-bottom: 1em;
-    }
-
-    ol {
-        margin-left: 30px;
-    }
-
-    ul {
-        margin-left: 40px;
-        margin-top: 10px;
-        margin-bottom: 0.8em;
-        margin-top: 0.6em;
-
-    }
-
-    li {
-        margin-bottom: 10px;
-        line-height: 1.3;
-    }
-
-    em {
-        font-style: italic;
-    }
-
-    /* Анимация при переходе по якорным ссылкам */
-    .chapter,
-    .lesson {
-        scroll-margin-top: 20px;
-    }
-</style>
 
 <?php require_once __DIR__ . '/templates/footer.php'; ?>

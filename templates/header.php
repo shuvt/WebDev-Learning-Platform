@@ -15,7 +15,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: rgb(248, 248, 248);
             color: rgb(67, 35, 35);
-            line-height: 1.6;
+            line-height: 1.3;
         }
         
         .container {

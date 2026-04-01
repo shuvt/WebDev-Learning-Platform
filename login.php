@@ -12,27 +12,28 @@ if (isLoggedIn()) {
 require_once __DIR__ . '/templates/header.php';
 ?>
 
-<div class="auth-container">
-    <h2>Вход в платформу</h2>
-    
-    <form action="login_process.php" method="POST" class="auth-form">
-        <div class="form-group">
-            <label for="username">Логин или Email:</label>
-            <input type="text" id="username" name="username" required 
-                   placeholder="Введите ваш логин или email">
-        </div>
+<link rel="stylesheet" href="/templates/course.css">
+
+<div class="admin-container" style="max-width: 400px; margin: 40px auto;">
+    <div class="admin-card" style="text-align: center;">
+        <div class="admin-card-title" style="font-size: 1.5rem; text-align: center;">Вход в платформу</div>
         
-        <div class="form-group">
-            <label for="password">Пароль:</label>
-            <input type="password" id="password" name="password" required 
-                   placeholder="Введите ваш пароль">
-        </div>
-        
-        <button type="submit" class="btn">Войти</button>
-    </form>
-    
-    <div style="margin-top: 20px; text-align: center;">
-        <p>Нет аккаунта? <a href="/register.php">Зарегистрируйтесь здесь</a></p>
+        <form action="login_process.php" method="POST" class="admin-form" style="text-align: left;">
+            <div class="form-group">
+                <label>Логин или Email:</label>
+                <input type="text" name="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Пароль:</label>
+                <input type="password" name="password" required>
+            </div>
+            
+            <div class="form-buttons" style="justify-content: center;">
+                <button type="submit" class="btn btn-primary">Войти</button>
+                <a href="/register.php" class="btn btn-edit">Зарегистрироваться</a>
+            </div>
+        </form>
     </div>
 </div>
 
