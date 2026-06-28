@@ -461,7 +461,6 @@ const pages = {
     html: `
 <div class="table-card">
   <div class="table-toolbar">
-    <span class="table-total">Всего: 10</span>
     <div style="display:flex;gap:6px">
       <input class="search-input" placeholder="Поиск по названию / автору…">
       <button class="btn-add">+ Добавить</button>
@@ -485,20 +484,19 @@ const pages = {
     html: `
 <div class="table-card">
   <div class="table-toolbar">
-    <span class="table-total">Всего: 5</span>
     <div style="display:flex;gap:6px">
       <input class="search-input" placeholder="Поиск…">
       <button class="btn-add">+ Добавить</button>
     </div>
   </div>
   <table>
-    <thead><tr><th>#</th><th>Фамилия</th><th>Имя</th><th>Дата рождения</th><th>Страна</th><th>Книг</th><th>Действия</th></tr></thead>
+    <thead><tr><th>#</th><th>Фамилия</th><th>Имя</th><th>Дата рождения</th><th>Страна</th><th>Действия</th></tr></thead>
     <tbody>
-      <tr><td class="td-m">1</td><td><strong>Толстой</strong></td><td>Лев</td><td>09.09.1828</td><td>Россия</td><td><strong>2</strong></td><td><button class="btn-sm">Ред.</button><button class="btn-sm btn-danger-sm">Удалить</button></td></tr>
-      <tr><td class="td-m">2</td><td><strong>Достоевский</strong></td><td>Фёдор</td><td>11.11.1821</td><td>Россия</td><td><strong>2</strong></td><td><button class="btn-sm">Ред.</button><button class="btn-sm btn-danger-sm">Удалить</button></td></tr>
-      <tr><td class="td-m">3</td><td><strong>Булгаков</strong></td><td>Михаил</td><td>15.05.1891</td><td>Россия</td><td><strong>2</strong></td><td><button class="btn-sm">Ред.</button><button class="btn-sm btn-danger-sm">Удалить</button></td></tr>
-      <tr><td class="td-m">4</td><td><strong>Пушкин</strong></td><td>Александр</td><td>06.06.1799</td><td>Россия</td><td><strong>2</strong></td><td><button class="btn-sm">Ред.</button><button class="btn-sm btn-danger-sm">Удалить</button></td></tr>
-      <tr><td class="td-m">5</td><td><strong>Гоголь</strong></td><td>Николай</td><td>20.03.1809</td><td>Россия</td><td><strong>2</strong></td><td><button class="btn-sm">Ред.</button><button class="btn-sm btn-danger-sm">Удалить</button></td></tr>
+      <tr><td class="td-m">1</td><td><strong>Толстой</strong></td><td>Лев</td><td>09.09.1828</td><td>Россия</td><td><button class="btn-sm">Ред.</button><button class="btn-sm btn-danger-sm">Удалить</button></td></tr>
+      <tr><td class="td-m">2</td><td><strong>Достоевский</strong></td><td>Фёдор</td><td>11.11.1821</td><td>Россия</td><td><button class="btn-sm">Ред.</button><button class="btn-sm btn-danger-sm">Удалить</button></td></tr>
+      <tr><td class="td-m">3</td><td><strong>Булгаков</strong></td><td>Михаил</td><td>15.05.1891</td><td>Россия</td><td><button class="btn-sm">Ред.</button><button class="btn-sm btn-danger-sm">Удалить</button></td></tr>
+      <tr><td class="td-m">4</td><td><strong>Пушкин</strong></td><td>Александр</td><td>06.06.1799</td><td>Россия</td><td><button class="btn-sm">Ред.</button><button class="btn-sm btn-danger-sm">Удалить</button></td></tr>
+      <tr><td class="td-m">5</td><td><strong>Гоголь</strong></td><td>Николай</td><td>20.03.1809</td><td>Россия</td><td><button class="btn-sm">Ред.</button><button class="btn-sm btn-danger-sm">Удалить</button></td></tr>
     </tbody>
   </table>
 </div>`
@@ -509,7 +507,6 @@ const pages = {
     html: `
 <div class="table-card">
   <div class="table-toolbar">
-    <span class="table-total">Всего: 3</span>
     <div style="display:flex;gap:6px">
       <input class="search-input" placeholder="Поиск…">
       <button class="btn-add">+ Добавить</button>
@@ -531,7 +528,6 @@ const pages = {
     html: `
 <div class="table-card">
   <div class="table-toolbar">
-    <span class="table-total">Всего: 7</span>
     <div style="display:flex;gap:6px">
       <input class="search-input" placeholder="Поиск…">
       <button class="btn-add">+ Добавить</button>
@@ -540,9 +536,9 @@ const pages = {
   <table>
     <thead><tr><th>#</th><th>Фамилия</th><th>Имя</th><th>Дата рождения</th><th>Регистрация</th><th>Выдач</th><th>Действия</th></tr></thead>
     <tbody>
-      <tr><td class="td-m">1</td><td><strong><span style="color:#3b6fc9;cursor:pointer">Петров</span></strong></td><td>Иван</td><td>15.05.1990</td><td>10.01.2023</td><td><strong>3</strong></td><td><button class="btn-sm">Карточка</button><button class="btn-sm">Ред.</button><button class="btn-sm btn-danger-sm">Удалить</button></td></tr>
-      <tr><td class="td-m">2</td><td><strong><span style="color:#3b6fc9;cursor:pointer">Иванова</span></strong></td><td>Мария</td><td>22.08.1985</td><td>15.02.2023</td><td><strong>2</strong></td><td><button class="btn-sm">Карточка</button><button class="btn-sm">Ред.</button><button class="btn-sm btn-danger-sm">Удалить</button></td></tr>
-      <tr><td class="td-m">3</td><td><strong><span style="color:#3b6fc9;cursor:pointer">Сидоров</span></strong></td><td>Алексей</td><td>03.12.1995</td><td>20.03.2023</td><td><strong>4</strong></td><td><button class="btn-sm">Карточка</button><button class="btn-sm">Ред.</button><button class="btn-sm btn-danger-sm">Удалить</button></td></tr>
+      <tr><td class="td-m">1</td><td><span style="cursor:pointer">Петров</span></td><td>Иван</td><td>15.05.1990</td><td>10.01.2023</td><td><strong>3</strong></td><td><button class="btn-sm">Карточка</button><button class="btn-sm">Ред.</button><button class="btn-sm btn-danger-sm">Удалить</button></td></tr>
+      <tr><td class="td-m">2</td><td><span style="cursor:pointer">Иванова</span></td><td>Мария</td><td>22.08.1985</td><td>15.02.2023</td><td><strong>2</strong></td><td><button class="btn-sm">Карточка</button><button class="btn-sm">Ред.</button><button class="btn-sm btn-danger-sm">Удалить</button></td></tr>
+      <tr><td class="td-m">3</td><td><span style="cursor:pointer">Сидоров</span></td><td>Алексей</td><td>03.12.1995</td><td>20.03.2023</td><td><strong>4</strong></td><td><button class="btn-sm">Карточка</button><button class="btn-sm">Ред.</button><button class="btn-sm btn-danger-sm">Удалить</button></td></tr>
     </tbody>
   </table>
 </div>`
@@ -553,7 +549,6 @@ const pages = {
     html: `
 <div class="table-card">
   <div class="table-toolbar">
-    <span class="table-total">Всего: 21</span>
     <button class="btn-add">+ Добавить</button>
   </div>
   <table>
@@ -574,7 +569,6 @@ const pages = {
     html: `
 <div class="table-card">
   <div class="table-toolbar">
-    <span class="table-total">Всего: 8</span>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
       <input class="search-input" placeholder="Книга / читатель…">
       <select style="padding:5px 8px;border:1px solid #dde2ee;border-radius:6px;font-size:0.78rem;background:#fff">

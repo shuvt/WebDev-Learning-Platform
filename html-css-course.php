@@ -1,4 +1,5 @@
 <?php
+// html-css-course.php
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/auth.php';
@@ -19,6 +20,72 @@ define('SPACE', '&nbsp;&nbsp;');
 
 <link rel="stylesheet" href="/templates/course.css">
 
+<?php if (isTeacher()): ?>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.css" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
+<script>
+var editors = {};
+var TOOLBAR = [
+    [{ header: [2, 3, 4, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'color': [] }, { 'background': [] }],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    ['code-block', 'link', 'image'],
+    ['clean']
+];
+
+function toggleSectionEdit(course, key) {
+    var form = document.getElementById('sef-' + key);
+    var content = document.getElementById('sc-' + key);
+    if (!form || !content) return;
+    if (form.style.display === 'none' || !form.style.display) {
+        if (!editors[key]) {
+            var editorEl = document.getElementById('editor-' + key);
+            if (!editorEl) return;
+            editors[key] = new Quill(editorEl, {
+                theme: 'snow',
+                modules: { toolbar: TOOLBAR }
+            });
+        }
+        editors[key].clipboard.dangerouslyPasteHTML(content.innerHTML.trim());
+        form.style.display = 'block';
+        content.style.outline = '2px dashed #aaa';
+    } else {
+        form.style.display = 'none';
+        content.style.outline = '';
+    }
+}
+
+var newTopicEditor = null;
+function toggleAddTopic() {
+    var form = document.getElementById('add-topic-form');
+    if (!form) return;
+    form.style.display = (form.style.display === 'none' || !form.style.display) ? 'block' : 'none';
+    if (form.style.display === 'block' && !newTopicEditor) {
+        newTopicEditor = new Quill(document.getElementById('editor-new-topic'), {
+            theme: 'snow',
+            modules: { toolbar: TOOLBAR }
+        });
+    }
+}
+
+document.addEventListener('submit', function(e) {
+    if (e.target.classList.contains('section-edit-form')) {
+        var key = e.target.dataset.key;
+        if (key && editors[key]) {
+            e.target.querySelector('textarea[name=content]').value = editors[key].root.innerHTML;
+        }
+    }
+    if (e.target.id === 'add-topic-form') {
+        if (newTopicEditor) {
+            document.getElementById('new-topic-content').value = newTopicEditor.root.innerHTML;
+        }
+    }
+});
+</script>
+<?php endif; ?>
+
 <div class="course-container">
     <div class="course-content">
         <div class="table-of-contents">
@@ -26,12 +93,15 @@ define('SPACE', '&nbsp;&nbsp;');
             <nav class="toc-nav">
                 <ul>
                     <li><a href="#introduction">Введение</a></li>
-                    <li><a href="#sql-firebird">3. HTML+CSS</a>
+                    <li><a href="#basic-html">3. HTML+CSS</a>
                         <ul>
-                            <li><a href="#intro-html">3.1. Введение </a></li>
-                            <li><a href="#text-work">3.2. Работа с текстом </a></li>
-                            <li><a href="#photo-work">3.3. Ссылки, изображения и таблицы </a></li>
-                            <li><a href="#intro-css">3.4. Введение, основные понятия CSS </a></li>
+                            <li><a href="#intro-html"><?= htmlspecialchars(getCourseSectionTitle('html', 'intro-html') ?? '3.1. Введение') ?></a></li>
+                            <li><a href="#text-work"><?= htmlspecialchars(getCourseSectionTitle('html', 'text-work') ?? '3.2. Работа с текстом') ?></a></li>
+                            <li><a href="#photo-work"><?= htmlspecialchars(getCourseSectionTitle('html', 'photo-work') ?? '3.3. Ссылки, изображения и таблицы') ?></a></li>
+                            <li><a href="#intro-css"><?= htmlspecialchars(getCourseSectionTitle('html', 'intro-css') ?? '3.4. Введение, основные понятия CSS') ?></a></li>
+                            <?php foreach (getCustomSections('html') as $cs): ?>
+                            <li><a href="#<?= htmlspecialchars($cs['section_key']) ?>"><?= htmlspecialchars($cs['title']) ?></a></li>
+                            <?php endforeach; ?>
                         </ul>
                     </li>
                 </ul>
@@ -41,9 +111,28 @@ define('SPACE', '&nbsp;&nbsp;');
         <div class="course-material">
             <!-- Введение -->
             <section id="introduction" class="chapter">
-                <div class="text-content">
+                <div class="text-content" id="sc-introduction">
+                <?php $__sc = getCourseSection('html', 'introduction'); if ($__sc !== null): echo $__sc; else: ?>
                     <p>Добро пожаловать в курс <strong>по основам HTML и CSS</strong>! Этот курс познакомит вас с основами создания веб-страниц. </p>
+                <?php endif; ?>
                 </div>
+                <?php if (isTeacher()): ?>
+                <div style="text-align:right; margin-top:4px">
+                    <button class="edit-section-btn" onclick="toggleSectionEdit('html','introduction')">✎ Редактировать</button>
+                </div>
+                <form method="post" action="/toggle-topic.php" class="section-edit-form" id="sef-introduction" data-key="introduction" style="display:none">
+                    <input type="hidden" name="action" value="save_section">
+                    <input type="hidden" name="course" value="html">
+                    <input type="hidden" name="topic_key" value="introduction">
+                    <input type="hidden" name="back" value="/html-css-course.php#introduction">
+                    <div id="editor-introduction"></div>
+                    <textarea name="content" style="display:none"></textarea>
+                    <div style="margin-top:8px; display:flex; gap:8px">
+                        <button type="submit" class="btn btn-primary btn-small">Сохранить</button>
+                        <button type="button" class="btn btn-small" onclick="toggleSectionEdit('html','introduction')">Отмена</button>
+                    </div>
+                </form>
+                <?php endif; ?>
             </section>
 
             <!-- ОСНОВЫ HTML и CSS -->
@@ -52,9 +141,11 @@ define('SPACE', '&nbsp;&nbsp;');
 
                 <!-- 3.1 Введение, основные понятия HTML+CSS  -->
                 <article id="intro-html" class="lesson">
-                    <h3>3.1. Введение, основные понятия HTML+CSS</h3>
+                    <?php $__intro_htmlTitle = getCourseSectionTitle('html', 'intro-html') ?? '3.1. Введение, основные понятия HTML+CSS'; ?>
+                    <h3><?= htmlspecialchars($__intro_htmlTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('html','intro-html')">Редактировать тему</button><?php endif; ?></h3>
 
-                    <div class="text-content">
+                    <div class="text-content" id="sc-intro-html">
+                    <?php $__sc = getCourseSection('html', 'intro-html'); if ($__sc !== null): echo $__sc; else: ?>
                         <h4>3.1.1. Что такое HTML?</h4>
                         <p><strong>HTML</strong> (HyperText Markup Language) — это язык разметки, который используется для создания веб-страниц. Он определяет структуру и содержание документа с помощью специальных элементов — тегов.</p>
 
@@ -89,21 +180,37 @@ define('SPACE', '&nbsp;&nbsp;');
                             <li><strong>&lt;h1&gt;–&lt;h6&gt;</strong> - заголовки от 1 до 6 уровня. &lt;h1&gt; - высший уровень, самый большой заголовок.</li>
                             <li><strong>&lt;p&gt;</strong> - определяет абзац.</li>
                         </ul>
-                    </div>
-
-                    <div class="text-content">
                         <h4>3.1.3. Создание первой веб-страницы.</h4>
                         <p>Создадим первую, простую веб-страницу. Для этого достаточно открыть любой текстовый редактор и создать файл с расширением .html (например, index.html).</p>
                         <p>В файл поместим код простой веб-страницы из примера 1, сохраним и откроем. </p>
+                    <?php endif; ?>
                     </div>
-                
+
+                    <?php if (isTeacher()): ?>
+                    <form method="post" action="/toggle-topic.php" class="section-edit-form" id="sef-intro-html" data-key="intro-html" style="display:none">
+                        <input type="hidden" name="action" value="save_section">
+                        <input type="hidden" name="course" value="html">
+                        <input type="hidden" name="topic_key" value="intro-html">
+                        <input type="hidden" name="back" value="/html-css-course.php#intro-html">
+                        <input type="text" name="title" class="section-title-input" value="<?= htmlspecialchars($__intro_htmlTitle) ?>" placeholder="Заголовок темы">
+                        <div id="editor-intro-html"></div>
+                        <textarea name="content" style="display:none"></textarea>
+                        <div style="margin-top:8px; display:flex; gap:8px">
+                            <button type="submit" class="btn btn-primary btn-small">Сохранить</button>
+                            <button type="button" class="btn btn-small" onclick="toggleSectionEdit('html','intro-html')">Отмена</button>
+                        </div>
+                    </form>
+                    <?php endif; ?>
+
                 <?= topicButton('html', 'intro-html', 'text-work') ?>
                 </article>
 
                 <!-- 3.2. Работа с текстом -->
                 <article id="text-work" class="lesson">
-                    <h3>3.2. Работа с текстом</h3>
-                    <div class="text-content">
+                    <?php $__text_workTitle = getCourseSectionTitle('html', 'text-work') ?? '3.2. Работа с текстом'; ?>
+                    <h3><?= htmlspecialchars($__text_workTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('html','text-work')">Редактировать тему</button><?php endif; ?></h3>
+                    <div class="text-content" id="sc-text-work">
+                    <?php $__sc = getCourseSection('html', 'text-work'); if ($__sc !== null): echo $__sc; else: ?>
                         <h4>3.2.1 Различные теги и их атрибуты </h4>
                             <p>Рассмотрим теги и их атрибуты более подробно.</p>
                             <ol>
@@ -200,16 +307,34 @@ define('SPACE', '&nbsp;&nbsp;');
                         <img src="/images/html_example.png" 
                             alt="Описание изображения" 
                             style="width: calc(100% - 40px); height: auto; max-width: calc(100% - 40px); margin-left: 40px; margin-bottom: 2em; margin-top: 1em; display: block;">
-
+                    <?php endif; ?>
                     </div>
+
+                    <?php if (isTeacher()): ?>
+                    <form method="post" action="/toggle-topic.php" class="section-edit-form" id="sef-text-work" data-key="text-work" style="display:none">
+                        <input type="hidden" name="action" value="save_section">
+                        <input type="hidden" name="course" value="html">
+                        <input type="hidden" name="topic_key" value="text-work">
+                        <input type="hidden" name="back" value="/html-css-course.php#text-work">
+                        <input type="text" name="title" class="section-title-input" value="<?= htmlspecialchars($__text_workTitle) ?>" placeholder="Заголовок темы">
+                        <div id="editor-text-work"></div>
+                        <textarea name="content" style="display:none"></textarea>
+                        <div style="margin-top:8px; display:flex; gap:8px">
+                            <button type="submit" class="btn btn-primary btn-small">Сохранить</button>
+                            <button type="button" class="btn btn-small" onclick="toggleSectionEdit('html','text-work')">Отмена</button>
+                        </div>
+                    </form>
+                    <?php endif; ?>
 
                 <?= topicButton('html', 'text-work', 'photo-work') ?>
                 </article>
 
                 <!-- 3.3. Ссылки, изображения и таблицы -->
                 <article id="photo-work" class="lesson">
-                <h3>3.3. Ссылки, изображения и таблицы</h3>
-                    <div class="text-content">
+                    <?php $__photo_workTitle = getCourseSectionTitle('html', 'photo-work') ?? '3.3. Ссылки, изображения и таблицы'; ?>
+                    <h3><?= htmlspecialchars($__photo_workTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('html','photo-work')">Редактировать тему</button><?php endif; ?></h3>
+                    <div class="text-content" id="sc-photo-work">
+                    <?php $__sc = getCourseSection('html', 'photo-work'); if ($__sc !== null): echo $__sc; else: ?>
                         <p><strong>Ссылки</strong></p>
                         <p>Ссылки создаются с помощью тега <a> </a> и атрибута href. Значением атрибута href является адрес страницы, на которую вы собираетесь перейти, когда щелкнете мышью по ссылке. </p>
                         <p>При создании ссылок на другие страницы вашего сайта нет необходимости указывать в URL aдpece его доменное имя. Вместо этого вы можете воспользоваться сокращенным вариантом, называемым также относительным URL-aдpecoм.</p>
@@ -286,16 +411,35 @@ define('SPACE', '&nbsp;&nbsp;');
                             </p>
                         </div>
                         <p>Результат:</p>
-                        <img src="/images/example3.png"; height: auto;margin-left: 40px;margin-bottom:2em; margin-top:1em">
+                        <img src="/images/example3.png" style="height: auto; margin-left: 40px; margin-bottom:2em; margin-top:1em">
+                    <?php endif; ?>
                     </div>
 
-                <?= topicButton('html', 'photo-work', 'intro-css') ?>    
+                    <?php if (isTeacher()): ?>
+                    <form method="post" action="/toggle-topic.php" class="section-edit-form" id="sef-photo-work" data-key="photo-work" style="display:none">
+                        <input type="hidden" name="action" value="save_section">
+                        <input type="hidden" name="course" value="html">
+                        <input type="hidden" name="topic_key" value="photo-work">
+                        <input type="hidden" name="back" value="/html-css-course.php#photo-work">
+                        <input type="text" name="title" class="section-title-input" value="<?= htmlspecialchars($__photo_workTitle) ?>" placeholder="Заголовок темы">
+                        <div id="editor-photo-work"></div>
+                        <textarea name="content" style="display:none"></textarea>
+                        <div style="margin-top:8px; display:flex; gap:8px">
+                            <button type="submit" class="btn btn-primary btn-small">Сохранить</button>
+                            <button type="button" class="btn btn-small" onclick="toggleSectionEdit('html','photo-work')">Отмена</button>
+                        </div>
+                    </form>
+                    <?php endif; ?>
+
+                <?= topicButton('html', 'photo-work', 'intro-css') ?>
                 </article>
 
                 <!-- 3.4.  Введение, основные понятия CSS -->
                 <article id="intro-css" class="lesson">
-                <h3>3.4.  Введение, основные понятия CSS</h3>
-                    <div class="text-content">
+                    <?php $__intro_cssTitle = getCourseSectionTitle('html', 'intro-css') ?? '3.4.  Введение, основные понятия CSS'; ?>
+                    <h3><?= htmlspecialchars($__intro_cssTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('html','intro-css')">Редактировать тему</button><?php endif; ?></h3>
+                    <div class="text-content" id="sc-intro-css">
+                    <?php $__sc = getCourseSection('html', 'intro-css'); if ($__sc !== null): echo $__sc; else: ?>
                         <h4>3.4.1. Что такое CSS?</h4>
                         <p><strong>CSS</strong> (Cascading Style Sheets) — это формальный язык описания внешнего вида документа. В то время как HTML отвечает за структуру и содержание веб-страницы, CSS определяет её визуальное представление: расположение элементов, цвета, шрифты и адаптацию под разные устройства. Файл формата .css связывают с основным документом при помощи тега следующим образом: </p>
                         <div class="content-placeholder">
@@ -354,8 +498,89 @@ define('SPACE', '&nbsp;&nbsp;');
                             <?= TAB1 ?>}
                         </p>
                     </div>
-                <?= topicButton('html', 'intro-css', null) ?>    
+                    <?php endif; ?>
+                    </div>
+
+                    <?php if (isTeacher()): ?>
+                    <form method="post" action="/toggle-topic.php" class="section-edit-form" id="sef-intro-css" data-key="intro-css" style="display:none">
+                        <input type="hidden" name="action" value="save_section">
+                        <input type="hidden" name="course" value="html">
+                        <input type="hidden" name="topic_key" value="intro-css">
+                        <input type="hidden" name="back" value="/html-css-course.php#intro-css">
+                        <input type="text" name="title" class="section-title-input" value="<?= htmlspecialchars($__intro_cssTitle) ?>" placeholder="Заголовок темы">
+                        <div id="editor-intro-css"></div>
+                        <textarea name="content" style="display:none"></textarea>
+                        <div style="margin-top:8px; display:flex; gap:8px">
+                            <button type="submit" class="btn btn-primary btn-small">Сохранить</button>
+                            <button type="button" class="btn btn-small" onclick="toggleSectionEdit('html','intro-css')">Отмена</button>
+                        </div>
+                    </form>
+                    <?php endif; ?>
+
+                <?= topicButton('html', 'intro-css', null) ?>
                 </article>
+
+                <!-- Динамические темы из БД (после всех статических) -->
+                <?php
+                $customSections = getCustomSections('html');
+                foreach ($customSections as $cs):
+                    $csKey = htmlspecialchars($cs['section_key']);
+                    $csTitle = htmlspecialchars($cs['title']);
+                ?>
+                <article id="<?= $csKey ?>" class="lesson">
+                    <h3>
+                        <?= $csTitle ?>
+                        <?php if (isTeacher()): ?>
+                        <button class="edit-section-btn" onclick="toggleSectionEdit('html','<?= $csKey ?>')">Редактировать тему</button>
+                        <form method="post" action="/toggle-topic.php" style="display:inline" onsubmit="return confirm('Удалить тему «<?= $csTitle ?>»?')">
+                            <input type="hidden" name="action" value="delete_section">
+                            <input type="hidden" name="course" value="html">
+                            <input type="hidden" name="topic_key" value="<?= $csKey ?>">
+                            <input type="hidden" name="back" value="/html-css-course.php">
+                            <button type="submit" class="delete-section-btn">✕</button>
+                        </form>
+                        <?php endif; ?>
+                    </h3>
+                    <div class="text-content" id="sc-<?= $csKey ?>">
+                        <?= $cs['content'] ?>
+                    </div>
+                    <?php if (isTeacher()): ?>
+                    <form method="post" action="/toggle-topic.php" class="section-edit-form" id="sef-<?= $csKey ?>" data-key="<?= $csKey ?>" style="display:none">
+                        <input type="hidden" name="action" value="save_section">
+                        <input type="hidden" name="course" value="html">
+                        <input type="hidden" name="topic_key" value="<?= $csKey ?>">
+                        <input type="hidden" name="back" value="/html-css-course.php#<?= $csKey ?>">
+                        <input type="text" name="title" class="section-title-input" value="<?= $csTitle ?>" placeholder="Заголовок темы">
+                        <div id="editor-<?= $csKey ?>"></div>
+                        <textarea name="content" style="display:none"></textarea>
+                        <div style="margin-top:8px; display:flex; gap:8px">
+                            <button type="submit" class="btn btn-primary btn-small">Сохранить</button>
+                            <button type="button" class="btn btn-small" onclick="toggleSectionEdit('html','<?= $csKey ?>')">Отмена</button>
+                        </div>
+                    </form>
+                    <?php endif; ?>
+                </article>
+                <?php endforeach; ?>
+
+                <!-- Форма добавления новой темы (только для учителей) -->
+                <?php if (isTeacher()): ?>
+                <button class="add-topic-btn" onclick="toggleAddTopic()">+ Добавить новую тему</button>
+                <form method="post" action="/toggle-topic.php" class="add-topic-form" id="add-topic-form" style="display:none">
+                    <input type="hidden" name="action" value="add_section">
+                    <input type="hidden" name="course" value="html">
+                    <input type="hidden" name="back" value="/html-css-course.php">
+                    <label style="display:block; font-weight:600; margin-bottom:4px">Название темы:</label>
+                    <input type="text" name="title" placeholder="Например: 3.5. Адаптивный дизайн" required>
+                    <label style="display:block; font-weight:600; margin: 10px 0 4px">Содержание:</label>
+                    <div id="editor-new-topic"></div>
+                    <textarea name="content" id="new-topic-content" style="display:none"></textarea>
+                    <div style="margin-top:12px; display:flex; gap:8px">
+                        <button type="submit" class="btn btn-primary">Добавить тему</button>
+                        <button type="button" class="btn" onclick="toggleAddTopic()">Отмена</button>
+                    </div>
+                </form>
+                <?php endif; ?>
+
             </section>
         </div>
     </div>

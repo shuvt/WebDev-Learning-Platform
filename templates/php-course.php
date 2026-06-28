@@ -23,16 +23,54 @@ define('SPACE', '&nbsp;&nbsp;');
 
 <?php if (isTeacher()): ?>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.css" rel="stylesheet">
-
+<style>
+.edit-section-btn {
+    background: none; border: 1px solid #bbb; border-radius: 4px;
+    padding: 1px 8px; margin-left: 10px; cursor: pointer;
+    font-size: 0.78rem; color: #666; vertical-align: middle;
+}
+.edit-section-btn:hover { background: #f0f0f0; border-color: #888; }
+.section-edit-form {
+    background: #f8f8f8; border: 1px solid #ddd; border-radius: 6px;
+    padding: 14px; margin: 10px 0;
+}
+.ql-container { font-size: 14px; background: white; }
+.ql-editor { min-height: 200px; }
+.add-topic-btn {
+    display: block; width: 100%; margin: 18px 0 10px;
+    padding: 10px; background: #eaf4f2; border: 2px dashed #7bb8b3;
+    border-radius: 8px; color: #2e5d5a; font-size: 1rem;
+    cursor: pointer; text-align: center;
+}
+.add-topic-btn:hover { background: #d5ece9; }
+.add-topic-form {
+    background: #f8f8f8; border: 1px solid #ddd; border-radius: 8px;
+    padding: 18px; margin: 10px 0;
+}
+.add-topic-form input[type=text] {
+    width: 100%; box-sizing: border-box; padding: 8px 10px;
+    font-size: 1rem; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px;
+}
+.delete-section-btn {
+    background: none; border: 1px solid #e08080; border-radius: 4px;
+    padding: 1px 8px; margin-left: 6px; cursor: pointer;
+    font-size: 0.78rem; color: #c0392b; vertical-align: middle;
+}
+.delete-section-btn:hover { background: #fdf0f0; }
+.section-title-input {
+    width: 100%; box-sizing: border-box; padding: 7px 10px;
+    font-size: 1rem; font-weight: 600; border: 1px solid #ccc;
+    border-radius: 4px; margin-bottom: 10px; font-family: inherit;
+}
+</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
 <script>
 var editors = {};
 var TOOLBAR = [
     [{ header: [2, 3, 4, false] }],
-    ['bold', 'italic', 'underline', 'strike'],
-    [{ 'color': [] }, { 'background': [] }],
+    ['bold', 'italic', 'underline'],
     [{ list: 'ordered' }, { list: 'bullet' }],
-    ['code-block', 'link', 'image'],
+    ['code-block', 'link'],
     ['clean']
 ];
 
@@ -42,13 +80,7 @@ function toggleSectionEdit(course, key) {
     if (!form || !content) return;
     if (form.style.display === 'none' || !form.style.display) {
         if (!editors[key]) {
-            var editorEl = document.getElementById('editor-' + key);
-            if (!editorEl) return;
-            // Простая инициализация без кастомного обработчика
-            editors[key] = new Quill(editorEl, {
-                theme: 'snow',
-                modules: { toolbar: TOOLBAR }
-            });
+            editors[key] = new Quill('#editor-' + key, { theme: 'snow', modules: { toolbar: TOOLBAR } });
         }
         editors[key].clipboard.dangerouslyPasteHTML(content.innerHTML.trim());
         form.style.display = 'block';
@@ -65,10 +97,7 @@ function toggleAddTopic() {
     if (!form) return;
     form.style.display = (form.style.display === 'none' || !form.style.display) ? 'block' : 'none';
     if (form.style.display === 'block' && !newTopicEditor) {
-        newTopicEditor = new Quill(document.getElementById('editor-new-topic'), {
-            theme: 'snow',
-            modules: { toolbar: TOOLBAR }
-        });
+        newTopicEditor = new Quill('#editor-new-topic', { theme: 'snow', modules: { toolbar: TOOLBAR } });
     }
 }
 
@@ -146,7 +175,7 @@ document.addEventListener('submit', function(e) {
                 <!-- 2.1 Введение в PHP -->
                 <article id="intro-php" class="lesson">
                     <?php $__intro_phpTitle = getCourseSectionTitle('php', 'intro-php') ?? '2.1. Введение в PHP'; ?>
-                    <h3><?= htmlspecialchars($__intro_phpTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('php','intro-php')">Редактировать тему</button><?php endif; ?></h3>
+                    <h3><?= htmlspecialchars($__intro_phpTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('php','intro-php')">✎</button><?php endif; ?></h3>
 
                     <div class="text-content" id="sc-intro-php">
                     <?php $__sc = getCourseSection('php', 'intro-php'); if ($__sc !== null): echo $__sc; else: ?>
@@ -211,7 +240,7 @@ document.addEventListener('submit', function(e) {
                 <!-- 2.2 Основы синтаксиса -->
                 <article id="basic-syntax-php" class="lesson">
                     <?php $__basic_syntax_phpTitle = getCourseSectionTitle('php', 'basic-syntax-php') ?? '2.2. Основы синтаксиса'; ?>
-                    <h3><?= htmlspecialchars($__basic_syntax_phpTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('php','basic-syntax-php')">Редактировать тему</button><?php endif; ?></h3>
+                    <h3><?= htmlspecialchars($__basic_syntax_phpTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('php','basic-syntax-php')">✎</button><?php endif; ?></h3>
                     <div class="text-content" id="sc-basic-syntax-php">
                     <?php $__sc = getCourseSection('php', 'basic-syntax-php'); if ($__sc !== null): echo $__sc; else: ?>
                         <h4>2.2.1. Структура кода. Теги, операторы вывода, комментарии</h4>
@@ -581,7 +610,7 @@ document.addEventListener('submit', function(e) {
                 <!-- 2.3 Работа с данными -->
                 <article id="work-with-data" class="lesson">
                     <?php $__work_with_dataTitle = getCourseSectionTitle('php', 'work-with-data') ?? '2.3. Работа с данными'; ?>
-                    <h3><?= htmlspecialchars($__work_with_dataTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('php','work-with-data')">Редактировать тему</button><?php endif; ?></h3>
+                    <h3><?= htmlspecialchars($__work_with_dataTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('php','work-with-data')">✎</button><?php endif; ?></h3>
                     <div class="text-content" id="sc-work-with-data">
                     <?php $__sc = getCourseSection('php', 'work-with-data'); if ($__sc !== null): echo $__sc; else: ?>
                         <h4>2.3.1. Строки: конкатенация, интерполяция, функции. </h4>
@@ -1037,7 +1066,7 @@ document.addEventListener('submit', function(e) {
                 <!-- 2.5. Работа с файлами -->
                 <article id="work-with-files" class="lesson">
                     <?php $__work_with_filesTitle = getCourseSectionTitle('php', 'work-with-files') ?? '2.5. Работа с файлами'; ?>
-                    <h3><?= htmlspecialchars($__work_with_filesTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('php','work-with-files')">Редактировать тему</button><?php endif; ?></h3>
+                    <h3><?= htmlspecialchars($__work_with_filesTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('php','work-with-files')">✎</button><?php endif; ?></h3>
                     <div class="text-content" id="sc-work-with-files">
                     <?php $__sc = getCourseSection('php', 'work-with-files'); if ($__sc !== null): echo $__sc; else: ?>
                         <h4>2.5.1. Файловая система. Основные операции с файлами</h4>
@@ -1114,7 +1143,7 @@ document.addEventListener('submit', function(e) {
                 <!-- 2.6 Связка PHP + SQL -->
                 <article id="php+sql" class="lesson">
                     <?php $__php_sqlTitle = getCourseSectionTitle('php', 'php+sql') ?? '2.6 Связка PHP + SQL'; ?>
-                    <h3><?= htmlspecialchars($__php_sqlTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('php','php+sql')">Редактировать тему</button><?php endif; ?></h3>
+                    <h3><?= htmlspecialchars($__php_sqlTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('php','php+sql')">✎</button><?php endif; ?></h3>
                     <div class="text-content" id="sc-php+sql">
                     <?php $__sc = getCourseSection('php', 'php+sql'); if ($__sc !== null): echo $__sc; else: ?>
                         <h4>Подключение PHP к Firebird</h4>
@@ -1200,7 +1229,7 @@ document.addEventListener('submit', function(e) {
                     <h3>
                         <?= $csTitle ?>
                         <?php if (isTeacher()): ?>
-                        <button class="edit-section-btn" onclick="toggleSectionEdit('php','<?= $csKey ?>')">Редактировать тему</button>
+                        <button class="edit-section-btn" onclick="toggleSectionEdit('php','<?= $csKey ?>')">✎</button>
                         <form method="post" action="/toggle-topic.php" style="display:inline" onsubmit="return confirm('Удалить тему «<?= $csTitle ?>»?')">
                             <input type="hidden" name="action" value="delete_section">
                             <input type="hidden" name="course" value="php">

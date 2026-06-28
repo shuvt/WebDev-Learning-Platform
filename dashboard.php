@@ -25,7 +25,7 @@ $db->exec("CREATE TABLE IF NOT EXISTS course_topic_progress (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 )");
 
-$totals       = ['sql' => 9, 'php' => 6, 'html' => 4, 'web' => 10];
+$totals       = ['sql' => 9, 'php' => 6, 'html' => 4, 'web' => 11];
 $courseLabels = ['sql' => 'SQL', 'php' => 'PHP', 'html' => 'HTML/CSS', 'web' => 'Веб-приложение'];
 
 $stmt = $db->prepare("SELECT course, SUM(is_done) as done FROM course_topic_progress WHERE user_id=? GROUP BY course");

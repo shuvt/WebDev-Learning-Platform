@@ -22,6 +22,72 @@ define('SPACE', '&nbsp;&nbsp;');
 
 <link rel="stylesheet" href="/templates/course.css">
 
+<?php if (isTeacher()): ?>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.css" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
+<script>
+var editors = {};
+var TOOLBAR = [
+    [{ header: [2, 3, 4, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'color': [] }, { 'background': [] }],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    ['code-block', 'link', 'image'],
+    ['clean']
+];
+
+function toggleSectionEdit(course, key) {
+    var form = document.getElementById('sef-' + key);
+    var content = document.getElementById('sc-' + key);
+    if (!form || !content) return;
+    if (form.style.display === 'none' || !form.style.display) {
+        if (!editors[key]) {
+            var editorEl = document.getElementById('editor-' + key);
+            if (!editorEl) return;
+            editors[key] = new Quill(editorEl, {
+                theme: 'snow',
+                modules: { toolbar: TOOLBAR }
+            });
+        }
+        editors[key].clipboard.dangerouslyPasteHTML(content.innerHTML.trim());
+        form.style.display = 'block';
+        content.style.outline = '2px dashed #aaa';
+    } else {
+        form.style.display = 'none';
+        content.style.outline = '';
+    }
+}
+
+var newTopicEditor = null;
+function toggleAddTopic() {
+    var form = document.getElementById('add-topic-form');
+    if (!form) return;
+    form.style.display = (form.style.display === 'none' || !form.style.display) ? 'block' : 'none';
+    if (form.style.display === 'block' && !newTopicEditor) {
+        newTopicEditor = new Quill(document.getElementById('editor-new-topic'), {
+            theme: 'snow',
+            modules: { toolbar: TOOLBAR }
+        });
+    }
+}
+
+document.addEventListener('submit', function(e) {
+    if (e.target.classList.contains('section-edit-form')) {
+        var key = e.target.dataset.key;
+        if (key && editors[key]) {
+            e.target.querySelector('textarea[name=content]').value = editors[key].root.innerHTML;
+        }
+    }
+    if (e.target.id === 'add-topic-form') {
+        if (newTopicEditor) {
+            document.getElementById('new-topic-content').value = newTopicEditor.root.innerHTML;
+        }
+    }
+});
+</script>
+<?php endif; ?>
+
 <div class="course-container">
     <div class="course-content">
         <div class="table-of-contents">
@@ -31,16 +97,19 @@ define('SPACE', '&nbsp;&nbsp;');
                     <li><a href="#introduction">Введение</a></li>
                     <li><a href="#sql-firebird">1. SQL FIREBIRD</a>
                         <ul>
-                            <li><a href="#intro-db">1.1. Введение в базы данных</a></li>
-                            <li><a href="#basic-sql">1.2. Основы SQL. Запросы</a></li>
-                            <li><a href="#aggregation">1.3. Агрегация данных</a></li>
-                            <li><a href="#joins">1.4. Соединение таблиц</a></li>
-                            <li><a href="#subqueries">1.5. Подзапросы</a></li>
-                            <li><a href="#procedural">1.6. Процедурное расширение SQL</a></li>
-                            <li><a href="#triggers">1.7. Триггеры</a></li>
-                            <li><a href="#transactions">1.8. Транзакции</a></li>
-                            <li><a href="#indexes">1.9. Индексы</a></li>
-                            <li><a href="#practice">1.10. Практические задания</a></li>
+                            <li><a href="#intro-db"><?= htmlspecialchars(getCourseSectionTitle('sql', 'intro-db') ?? '1.1. Введение в базы данных') ?></a></li>
+                            <li><a href="#basic-sql"><?= htmlspecialchars(getCourseSectionTitle('sql', 'basic-sql') ?? '1.2. Основы SQL. Запросы') ?></a></li>
+                            <li><a href="#aggregation"><?= htmlspecialchars(getCourseSectionTitle('sql', 'aggregation') ?? '1.3. Агрегация данных') ?></a></li>
+                            <li><a href="#joins"><?= htmlspecialchars(getCourseSectionTitle('sql', 'joins') ?? '1.4. Соединение таблиц') ?></a></li>
+                            <li><a href="#subqueries"><?= htmlspecialchars(getCourseSectionTitle('sql', 'subqueries') ?? '1.5. Подзапросы') ?></a></li>
+                            <li><a href="#procedural"><?= htmlspecialchars(getCourseSectionTitle('sql', 'procedural') ?? '1.6. Процедурное расширение SQL') ?></a></li>
+                            <li><a href="#triggers"><?= htmlspecialchars(getCourseSectionTitle('sql', 'triggers') ?? '1.7. Триггеры') ?></a></li>
+                            <li><a href="#transactions"><?= htmlspecialchars(getCourseSectionTitle('sql', 'transactions') ?? '1.8. Транзакции') ?></a></li>
+                            <li><a href="#indexes"><?= htmlspecialchars(getCourseSectionTitle('sql', 'indexes') ?? '1.9. Индексы') ?></a></li>
+                            <?php foreach (getCustomSections('sql') as $cs): ?>
+                            <li><a href="#<?= htmlspecialchars($cs['section_key']) ?>"><?= htmlspecialchars($cs['title']) ?></a></li>
+                            <?php endforeach; ?>
+                            <li><a href="#practice">Практические задания</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -50,7 +119,8 @@ define('SPACE', '&nbsp;&nbsp;');
         <div class="course-material">
             <!-- Введение -->
             <section id="introduction" class="chapter">
-                <div class="text-content">
+                <div class="text-content" id="sc-introduction">
+                <?php $__sc = getCourseSection('sql', 'introduction'); if ($__sc !== null): echo $__sc; else: ?>
                     <p>Добро пожаловать в курс <strong>SQL Basics</strong>! Этот курс познакомит вас с основами языка запросов SQL и работой с базами данных Firebird.</p>
                     <p>В ходе обучения вы освоите основные конструкции SQL, научитесь создавать запросы, работать с таблицами и управлять данными.</p>
                     
@@ -59,7 +129,25 @@ define('SPACE', '&nbsp;&nbsp;');
                     font-size: 0.99rem; letter-spacing: 0.02em; margin: 0 2px; transition: all 0.2s ease; border: 1px solid transparent;" onmouseover="this.style.background='rgba(90,150,144,0.25)';
                      this.style.borderColor='rgba(47,87,85,0.4)';" onmouseout="this.style.background='rgba(90,150,144,0.18)'; this.style.borderColor='transparent';">
                      практическим заданиям</a>. Для новичков рекомендуется пройти весь курс и в конце закрепить знания на практике.</p>
+                <?php endif; ?>
                 </div>
+                <?php if (isTeacher()): ?>
+                <div style="text-align:right; margin-top:4px">
+                    <button class="edit-section-btn" onclick="toggleSectionEdit('sql','introduction')">✎ Редактировать</button>
+                </div>
+                <form method="post" action="/toggle-topic.php" class="section-edit-form" id="sef-introduction" data-key="introduction" style="display:none">
+                    <input type="hidden" name="action" value="save_section">
+                    <input type="hidden" name="course" value="sql">
+                    <input type="hidden" name="topic_key" value="introduction">
+                    <input type="hidden" name="back" value="/sql-course.php#introduction">
+                    <div id="editor-introduction"></div>
+                    <textarea name="content" style="display:none"></textarea>
+                    <div style="margin-top:8px; display:flex; gap:8px">
+                        <button type="submit" class="btn btn-primary btn-small">Сохранить</button>
+                        <button type="button" class="btn btn-small" onclick="toggleSectionEdit('sql','introduction')">Отмена</button>
+                    </div>
+                </form>
+                <?php endif; ?>
             </section>
 
             <!-- SQL FIREBIRD -->
@@ -68,9 +156,11 @@ define('SPACE', '&nbsp;&nbsp;');
 
                 <!-- 1.1 Введение в базы данных -->
                 <article id="intro-db" class="lesson">
-                    <h3>1.1. Введение в базы данных</h3>
+                    <?php $__intro_dbTitle = getCourseSectionTitle('sql', 'intro-db') ?? '1.1. Введение в базы данных'; ?>
+                    <h3><?= htmlspecialchars($__intro_dbTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('sql','intro-db')">Редактировать тему</button><?php endif; ?></h3>
 
-                    <div class="text-content">
+                    <div class="text-content" id="sc-intro-db">
+                    <?php $__sc = getCourseSection('sql', 'intro-db'); if ($__sc !== null): echo $__sc; else: ?>
                         <h4>1.1.1. Зачем изучать SQL</h4>
                         <p><strong>SQL</strong> (сокращение от англ. Structured Query Language) — это язык запросов, которые структурированы особым образом. Данный язык применяется для работы с базами данных. Главная задача SQL — составлять запросы так, чтобы находить среди большого объёма информации ту, что нужна для конкретных целей, сортировать её, структурировать и представлять в наиболее простом и понятном виде.</p>
 
@@ -146,17 +236,34 @@ define('SPACE', '&nbsp;&nbsp;');
                             <li><strong>Сетевые</strong>. Базы данных, в которых к вертикальным иерархическим связям добавляются горизонтальные связи</li>
                         </ol>
                         <img src="/images/db_structure.png" alt="Структуры баз данных" style="max-width: 100%; height: auto;">
-
-
+                    <?php endif; ?>
                     </div>
+
+                    <?php if (isTeacher()): ?>
+                    <form method="post" action="/toggle-topic.php" class="section-edit-form" id="sef-intro-db" data-key="intro-db" style="display:none">
+                        <input type="hidden" name="action" value="save_section">
+                        <input type="hidden" name="course" value="sql">
+                        <input type="hidden" name="topic_key" value="intro-db">
+                        <input type="hidden" name="back" value="/sql-course.php#intro-db">
+                        <input type="text" name="title" class="section-title-input" value="<?= htmlspecialchars($__intro_dbTitle) ?>" placeholder="Заголовок темы">
+                        <div id="editor-intro-db"></div>
+                        <textarea name="content" style="display:none"></textarea>
+                        <div style="margin-top:8px; display:flex; gap:8px">
+                            <button type="submit" class="btn btn-primary btn-small">Сохранить</button>
+                            <button type="button" class="btn btn-small" onclick="toggleSectionEdit('sql','intro-db')">Отмена</button>
+                        </div>
+                    </form>
+                    <?php endif; ?>
                 
                 <?= topicButton('sql', 'intro-db', 'basic-sql') ?>
                 </article>
 
                 <!-- 1.2 Основы SQL -->
                 <article id="basic-sql" class="lesson">
-                    <h3>1.2. Основы SQL. Запросы</h3>
-                    <div class="text-content">
+                    <?php $__basic_sqlTitle = getCourseSectionTitle('sql', 'basic-sql') ?? '1.2. Основы SQL. Запросы'; ?>
+                    <h3><?= htmlspecialchars($__basic_sqlTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('sql','basic-sql')">Редактировать тему</button><?php endif; ?></h3>
+                    <div class="text-content" id="sc-basic-sql">
+                    <?php $__sc = getCourseSection('sql', 'basic-sql'); if ($__sc !== null): echo $__sc; else: ?>
                         <h4>1.2.1. Структура SQL-запросов</h4>
                         <p><strong>Запрос в SQL</strong> — это команда на языке SQL, которая позволяет взаимодействовать с реляционной базой данных. Запросы позволяют пользователю извлекать, модифицировать и управлять данными, содержащимися в базе данных. Запрос состоит из нескольких компонентов, или предложений. Обычно в запрос включается по крайней мере два или три из шести доступных предложений.<br> В таблице ниже представлены компоненты запроса и их краткое описание.</p>
                         <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
@@ -277,15 +384,34 @@ define('SPACE', '&nbsp;&nbsp;');
                             <?= TAB1 ?>ORDER BY dept_no ASC, salary DESC;
                         </p>
                     </div>
+                    <?php endif; ?>
                     </div>
+
+                    <?php if (isTeacher()): ?>
+                    <form method="post" action="/toggle-topic.php" class="section-edit-form" id="sef-basic-sql" data-key="basic-sql" style="display:none">
+                        <input type="hidden" name="action" value="save_section">
+                        <input type="hidden" name="course" value="sql">
+                        <input type="hidden" name="topic_key" value="basic-sql">
+                        <input type="hidden" name="back" value="/sql-course.php#basic-sql">
+                        <input type="text" name="title" class="section-title-input" value="<?= htmlspecialchars($__basic_sqlTitle) ?>" placeholder="Заголовок темы">
+                        <div id="editor-basic-sql"></div>
+                        <textarea name="content" style="display:none"></textarea>
+                        <div style="margin-top:8px; display:flex; gap:8px">
+                            <button type="submit" class="btn btn-primary btn-small">Сохранить</button>
+                            <button type="button" class="btn btn-small" onclick="toggleSectionEdit('sql','basic-sql')">Отмена</button>
+                        </div>
+                    </form>
+                    <?php endif; ?>
                 
                 <?= topicButton('sql', 'basic-sql', 'aggregation') ?>
                 </article>
 
                 <!-- 1.3 Агрегация данных -->
                 <article id="aggregation" class="lesson">
-                    <h3>1.3. Агрегация данных</h3>
-                    <div class="text-content">
+                    <?php $__aggregationTitle = getCourseSectionTitle('sql', 'aggregation') ?? '1.3. Агрегация данных'; ?>
+                    <h3><?= htmlspecialchars($__aggregationTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('sql','aggregation')">Редактировать тему</button><?php endif; ?></h3>
+                    <div class="text-content" id="sc-aggregation">
+                    <?php $__sc = getCourseSection('sql', 'aggregation'); if ($__sc !== null): echo $__sc; else: ?>
                         <p>Агрегатные функции в SQL позволяют выполнять вычисления над множеством значений и возвращать одно значение. В данном пункте рассмотрим основные агрегатные функции, группировку данных с помощью команды GROUP BY и фильтрацию агрегированных данных с помощью HAVING.</p>
                         <h4>1.3.1. Использование агрегатных функций: COUNT, SUM, AVG, MIN, MAX</h4>
                         <p>Важно учесть, что агрегатные функции, за исключением COUNT(*), не учитывают значения NULL.</p>
@@ -377,15 +503,34 @@ define('SPACE', '&nbsp;&nbsp;');
                                 <?= TAB1 ?>HAVING AVG(salary) > 100000
                             </p>
                         </div>
+                    <?php endif; ?>
                     </div>
+
+                    <?php if (isTeacher()): ?>
+                    <form method="post" action="/toggle-topic.php" class="section-edit-form" id="sef-aggregation" data-key="aggregation" style="display:none">
+                        <input type="hidden" name="action" value="save_section">
+                        <input type="hidden" name="course" value="sql">
+                        <input type="hidden" name="topic_key" value="aggregation">
+                        <input type="hidden" name="back" value="/sql-course.php#aggregation">
+                        <input type="text" name="title" class="section-title-input" value="<?= htmlspecialchars($__aggregationTitle) ?>" placeholder="Заголовок темы">
+                        <div id="editor-aggregation"></div>
+                        <textarea name="content" style="display:none"></textarea>
+                        <div style="margin-top:8px; display:flex; gap:8px">
+                            <button type="submit" class="btn btn-primary btn-small">Сохранить</button>
+                            <button type="button" class="btn btn-small" onclick="toggleSectionEdit('sql','aggregation')">Отмена</button>
+                        </div>
+                    </form>
+                    <?php endif; ?>
                 
                 <?= topicButton('sql', 'aggregation', 'joins') ?>
                 </article>
 
                 <!-- 1.4 Соединение таблиц -->
                 <article id="joins" class="lesson">
-                    <h3>1.4. Соединение таблиц</h3>
-                    <div class="text-content">
+                    <?php $__joinsTitle = getCourseSectionTitle('sql', 'joins') ?? '1.4. Соединение таблиц'; ?>
+                    <h3><?= htmlspecialchars($__joinsTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('sql','joins')">Редактировать тему</button><?php endif; ?></h3>
+                    <div class="text-content" id="sc-joins">
+                    <?php $__sc = getCourseSection('sql', 'joins'); if ($__sc !== null): echo $__sc; else: ?>
                         <h4>1.4.1. Типы соединений: INNER JOIN, LEFT JOIN, RIGHT JOIN</h4>
                         <p><strong>Соединения в SQL</strong> — это инструмент для соединения двух и более таблиц по условию.</p>
                         <p>Синтаксис оператора JOIN c ON</p>
@@ -471,16 +616,34 @@ define('SPACE', '&nbsp;&nbsp;');
                                 <?= TAB1 ?>FROM customer;
                             </p>
                         </div>
-
+                    <?php endif; ?>
                     </div>
+
+                    <?php if (isTeacher()): ?>
+                    <form method="post" action="/toggle-topic.php" class="section-edit-form" id="sef-joins" data-key="joins" style="display:none">
+                        <input type="hidden" name="action" value="save_section">
+                        <input type="hidden" name="course" value="sql">
+                        <input type="hidden" name="topic_key" value="joins">
+                        <input type="hidden" name="back" value="/sql-course.php#joins">
+                        <input type="text" name="title" class="section-title-input" value="<?= htmlspecialchars($__joinsTitle) ?>" placeholder="Заголовок темы">
+                        <div id="editor-joins"></div>
+                        <textarea name="content" style="display:none"></textarea>
+                        <div style="margin-top:8px; display:flex; gap:8px">
+                            <button type="submit" class="btn btn-primary btn-small">Сохранить</button>
+                            <button type="button" class="btn btn-small" onclick="toggleSectionEdit('sql','joins')">Отмена</button>
+                        </div>
+                    </form>
+                    <?php endif; ?>
                 
                 <?= topicButton('sql', 'joins', 'subqueries') ?>
                 </article>
 
                 <!-- 1.5 Подзапросы -->
                 <article id="subqueries" class="lesson">
-                    <h3>1.5. Подзапросы</h3>
-                    <div class="text-content">
+                    <?php $__subqueriesTitle = getCourseSectionTitle('sql', 'subqueries') ?? '1.5. Подзапросы'; ?>
+                    <h3><?= htmlspecialchars($__subqueriesTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('sql','subqueries')">Редактировать тему</button><?php endif; ?></h3>
+                    <div class="text-content" id="sc-subqueries">
+                    <?php $__sc = getCourseSection('sql', 'subqueries'); if ($__sc !== null): echo $__sc; else: ?>
 
                         <h4>1.5.1. Что такое подзапросы и когда их использовать. Виды подзапросов</h4>
                         <p><strong>Подзапрос</strong> — это запрос, который вложен в другой запрос. Подзапрос всегда заключен в круглые скобки и обычно выполняется перед содержащей инструкцией. Подобно любому запросу, подзапрос возвращает результирующий набор, который может состоять из: </p>
@@ -509,7 +672,7 @@ define('SPACE', '&nbsp;&nbsp;');
                                 <?= TAB1 ?>WHERE emp_no = (SELECT MAX(emp_no) FROM employee)
                             </p>
                         </div>
-                        <p>Пример, показанный выше — некоррелированный подзапрос, который может быть выполнен отдельно и не ссылается ни на что из содержащей инструкции. Помимо того, что это некоррелированный подзапрос, данный пример также возвращает результирующий набор, содержащий только одну строку и один столбец. Этот тип подзапроса известен как скалярный подзапрос и может появляться на любой стороне условия, использующего обычные операторы сравнения (=, <,>, <=,>=)</p>
+                        <p>Пример, показанный выше — некоррелированный подзапрос, который может быть выполнен отдельно и не ссылается ни на что из содержащей инструкции. Помимо того, что это некоррелированный подзапрос, данный пример также возвращает результирующий набор, содержащий только одну строку и один столбец. Этот тип подзапроса известен как скалярный подзапрос и может появляться на любой стороне условия, использующего обычные операторы сравнения (=, &lt;,&gt;, &lt;=,&gt;=)</p>
                         <p>Если подзапрос возвращает более одной строки, его нельзя использовать в условии равенства. Однако есть четыре дополнительных оператора, которые можно использовать для создания условий с этими типами подзапросов.</p>
                         <p style="margin-bottom: 0.4em;"><strong>Операторы IN и NOT IN </strong></p>
                         <p>Хотя проверить на равенство одно значение с набором значений нельзя, можно проверить, входит ли конкретное значение в набор. Следующий пример (пусть и не использующий подзапрос) демонстрирует, как создать условие, которое использует оператор in для поиска для значения в наборе значений: </p>
@@ -536,7 +699,7 @@ define('SPACE', '&nbsp;&nbsp;');
                             </p>
                         </div>
                         <p style="margin-bottom: 0.4em;"><strong>Оператор ALL </strong></p>
-                        <p>В то время как оператор in используется, чтобы выяснить, имеется ли выражение в наборе выражений, оператор all позволяет сравнивать отдельное значение и каждое значение в наборе. Чтобы создать такое условие, нужно использовать один из операторов сравнения (=, <,>, и т.д.) в сочетании с оператором all. </p>
+                        <p>В то время как оператор in используется, чтобы выяснить, имеется ли выражение в наборе выражений, оператор all позволяет сравнивать отдельное значение и каждое значение в наборе. Чтобы создать такое условие, нужно использовать один из операторов сравнения (=, &lt;,&gt;, и т.д.) в сочетании с оператором all. </p>
                         <p>Рассмотрим следующий пример в котором запрос находит всех сотрудников, чья зарплата больше, чем зарплата всех сотрудников в определенной стране, например, в США</p>
                         <div class="content-placeholder">
                         <p style="margin-bottom: 0em;">
@@ -611,15 +774,34 @@ define('SPACE', '&nbsp;&nbsp;');
                             </p>
                         </div>
                         <p>Запрос выведет список сотрудников, которые оформили только один заказ.</p>
+                    <?php endif; ?>
                     </div>
+
+                    <?php if (isTeacher()): ?>
+                    <form method="post" action="/toggle-topic.php" class="section-edit-form" id="sef-subqueries" data-key="subqueries" style="display:none">
+                        <input type="hidden" name="action" value="save_section">
+                        <input type="hidden" name="course" value="sql">
+                        <input type="hidden" name="topic_key" value="subqueries">
+                        <input type="hidden" name="back" value="/sql-course.php#subqueries">
+                        <input type="text" name="title" class="section-title-input" value="<?= htmlspecialchars($__subqueriesTitle) ?>" placeholder="Заголовок темы">
+                        <div id="editor-subqueries"></div>
+                        <textarea name="content" style="display:none"></textarea>
+                        <div style="margin-top:8px; display:flex; gap:8px">
+                            <button type="submit" class="btn btn-primary btn-small">Сохранить</button>
+                            <button type="button" class="btn btn-small" onclick="toggleSectionEdit('sql','subqueries')">Отмена</button>
+                        </div>
+                    </form>
+                    <?php endif; ?>
                 
                 <?= topicButton('sql', 'subqueries', 'procedural') ?>
                 </article>
 
                 <!-- 1.6 Процедурное расширение -->
                 <article id="procedural" class="lesson">
-                    <h3>1.6. Процедурное расширение SQL</h3>
-                    <div class="text-content">
+                    <?php $__proceduralTitle = getCourseSectionTitle('sql', 'procedural') ?? '1.6. Процедурное расширение SQL'; ?>
+                    <h3><?= htmlspecialchars($__proceduralTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('sql','procedural')">Редактировать тему</button><?php endif; ?></h3>
+                    <div class="text-content" id="sc-procedural">
+                    <?php $__sc = getCourseSection('sql', 'procedural'); if ($__sc !== null): echo $__sc; else: ?>
                         <h4>1.6.1. Процедурный язык PSQL </h4>
                         <p><strong>Хранимая процедура</strong> — это программный модуль, который может быть вызван с клиента, из другой процедуры, функции, выполнимого блока или триггера. Хранимые процедуры, хранимые функции, исполняемые блоки и триггеры пишутся на процедурном языке SQL (PSQL). Большинство операторов SQL доступно и в PSQL, иногда с ограничениями или расширениями. Заметными исключениями являются DDL и операторы управления транзакциями. Хранимые процедуры могут принимать и возвращать множество параметров.</p>
                         <p>Синтаксис процедуры:</p>
@@ -671,7 +853,7 @@ define('SPACE', '&nbsp;&nbsp;');
                             </p>
                         </div>
                         <p>Такие процедуры вызываются оператором </p>
-                        <p style="font-style: italic">EXECUTE PROCEDURE <имя процедуры>
+                        <p style="font-style: italic">EXECUTE PROCEDURE &lt;имя процедуры&gt;
                         </p>
                         <p>Рассмотрим подробнее селективные процедуры. Если использовать execute procedure, то можно получить всегда только одно значение, или как бы "одну строку", в виде набора значений, но не "несколько строк".
                             <br> Процедуры в Firebird могут выдавать данные таким образом, что их можно вызывать через select. Отсюда и название — "селективные" процедуры.
@@ -701,15 +883,34 @@ define('SPACE', '&nbsp;&nbsp;');
                         <p>Ключевым в работе процедуры является указание suspend. В тот момент, когда выполнение процедуры доходит до suspend, сервер останавливает выполнение процедуры, и "ждет", пока клиент не попросит получить данные "из процедуры". После получения данных (одной "записи") сервер прокрутит следующий цикл for select до очередного suspend, и так далее, пока клиент не перестанет просить записи, или пока записи в запросе не кончатся. </p>
                         <p>Селективные процедуры нужно вызывать так:</p>
                         <p style="font-style: italic">select * from test </p>
+                    <?php endif; ?>
                     </div>
+
+                    <?php if (isTeacher()): ?>
+                    <form method="post" action="/toggle-topic.php" class="section-edit-form" id="sef-procedural" data-key="procedural" style="display:none">
+                        <input type="hidden" name="action" value="save_section">
+                        <input type="hidden" name="course" value="sql">
+                        <input type="hidden" name="topic_key" value="procedural">
+                        <input type="hidden" name="back" value="/sql-course.php#procedural">
+                        <input type="text" name="title" class="section-title-input" value="<?= htmlspecialchars($__proceduralTitle) ?>" placeholder="Заголовок темы">
+                        <div id="editor-procedural"></div>
+                        <textarea name="content" style="display:none"></textarea>
+                        <div style="margin-top:8px; display:flex; gap:8px">
+                            <button type="submit" class="btn btn-primary btn-small">Сохранить</button>
+                            <button type="button" class="btn btn-small" onclick="toggleSectionEdit('sql','procedural')">Отмена</button>
+                        </div>
+                    </form>
+                    <?php endif; ?>
                 
                 <?= topicButton('sql', 'procedural', 'triggers') ?>
                 </article>
 
                 <!-- 1.7 Триггеры -->
                 <article id="triggers" class="lesson">
-                    <h3>1.7. Триггеры</h3>
-                    <div class="text-content">
+                    <?php $__triggersTitle = getCourseSectionTitle('sql', 'triggers') ?? '1.7. Триггеры'; ?>
+                    <h3><?= htmlspecialchars($__triggersTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('sql','triggers')">Редактировать тему</button><?php endif; ?></h3>
+                    <div class="text-content" id="sc-triggers">
+                    <?php $__sc = getCourseSection('sql', 'triggers'); if ($__sc !== null): echo $__sc; else: ?>
                         <h4>1.7.1. Понятие триггера </h4>
                         <p><strong>Триггеры</strong> — это особые процедуры, которые автоматически выполняются при определенных событиях, таких как вставка, обновление или удаление записей. </p>
                         <p>Синтаксис триггера</p>
@@ -802,15 +1003,34 @@ define('SPACE', '&nbsp;&nbsp;');
                                 <?= TAB1 ?>END;
                             </p>
                         </div>
+                    <?php endif; ?>
                     </div>
+
+                    <?php if (isTeacher()): ?>
+                    <form method="post" action="/toggle-topic.php" class="section-edit-form" id="sef-triggers" data-key="triggers" style="display:none">
+                        <input type="hidden" name="action" value="save_section">
+                        <input type="hidden" name="course" value="sql">
+                        <input type="hidden" name="topic_key" value="triggers">
+                        <input type="hidden" name="back" value="/sql-course.php#triggers">
+                        <input type="text" name="title" class="section-title-input" value="<?= htmlspecialchars($__triggersTitle) ?>" placeholder="Заголовок темы">
+                        <div id="editor-triggers"></div>
+                        <textarea name="content" style="display:none"></textarea>
+                        <div style="margin-top:8px; display:flex; gap:8px">
+                            <button type="submit" class="btn btn-primary btn-small">Сохранить</button>
+                            <button type="button" class="btn btn-small" onclick="toggleSectionEdit('sql','triggers')">Отмена</button>
+                        </div>
+                    </form>
+                    <?php endif; ?>
                 
                 <?= topicButton('sql', 'triggers', 'transactions') ?>
                 </article>
 
                 <!-- 1.8 Транзакции -->
                 <article id="transactions" class="lesson">
-                    <h3>1.8. Транзакции</h3>
-                    <div class="text-content">
+                    <?php $__transactionsTitle = getCourseSectionTitle('sql', 'transactions') ?? '1.8. Транзакции'; ?>
+                    <h3><?= htmlspecialchars($__transactionsTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('sql','transactions')">Редактировать тему</button><?php endif; ?></h3>
+                    <div class="text-content" id="sc-transactions">
+                    <?php $__sc = getCourseSection('sql', 'transactions'); if ($__sc !== null): echo $__sc; else: ?>
                         <h4>1.8.1. Основы транзакций в SQL </h4>
                         <p><strong>Транзакции</strong> — механизм, позволяющий группировать несколько операций в одну логическую единицу. Другими словами, транзакция — это логически сгруппированные операции.</p>
                         <p>Транзакции используются для обеспечения ACID-свойств:</p>
@@ -863,7 +1083,7 @@ define('SPACE', '&nbsp;&nbsp;');
                             <li>[ISOLATION LEVEL] - Определяет уровень изолированности транзакции. Уровень влияет на видимость изменений, сделанных другими транзакциями</li>
                             <li>[NO WAIT | WAIT] - Определяет поведение транзакции при возникновении блокировок</li>
                             <li>[NO AUTO UNDO] - Оператор ROLLBACK помечает транзакцию как отменённую без удаления созданных в этой транзакции версий</li>
-                            <li>[RESERVING <tables>] - Резервирует таблицы для использования в транзакции. Позволяет указать, какие таблицы будут использоваться, и задать режим доступа к ним</li>
+                            <li>[RESERVING &lt;tables&gt;] - Резервирует таблицы для использования в транзакции. Позволяет указать, какие таблицы будут использоваться, и задать режим доступа к ним</li>
                         </ul>
                         <p>Режимы доступа: </p>
                         <ol style="margin-left: 20px;">
@@ -934,15 +1154,34 @@ define('SPACE', '&nbsp;&nbsp;');
                             <?= TAB1 ?>COMMIT;
                         </p>
                     </div>
+                    <?php endif; ?>
                     </div>
+
+                    <?php if (isTeacher()): ?>
+                    <form method="post" action="/toggle-topic.php" class="section-edit-form" id="sef-transactions" data-key="transactions" style="display:none">
+                        <input type="hidden" name="action" value="save_section">
+                        <input type="hidden" name="course" value="sql">
+                        <input type="hidden" name="topic_key" value="transactions">
+                        <input type="hidden" name="back" value="/sql-course.php#transactions">
+                        <input type="text" name="title" class="section-title-input" value="<?= htmlspecialchars($__transactionsTitle) ?>" placeholder="Заголовок темы">
+                        <div id="editor-transactions"></div>
+                        <textarea name="content" style="display:none"></textarea>
+                        <div style="margin-top:8px; display:flex; gap:8px">
+                            <button type="submit" class="btn btn-primary btn-small">Сохранить</button>
+                            <button type="button" class="btn btn-small" onclick="toggleSectionEdit('sql','transactions')">Отмена</button>
+                        </div>
+                    </form>
+                    <?php endif; ?>
                 
                 <?= topicButton('sql', 'transactions', 'indexes') ?>
                 </article>
 
                 <!-- 1.9 Индексы -->
                 <article id="indexes" class="lesson">
-                    <h3>1.9. Индексы</h3>
-                    <div class="text-content">
+                    <?php $__indexesTitle = getCourseSectionTitle('sql', 'indexes') ?? '1.9. Индексы'; ?>
+                    <h3><?= htmlspecialchars($__indexesTitle) ?><?php if (isTeacher()): ?> <button class="edit-section-btn" onclick="toggleSectionEdit('sql','indexes')">Редактировать тему</button><?php endif; ?></h3>
+                    <div class="text-content" id="sc-indexes">
+                    <?php $__sc = getCourseSection('sql', 'indexes'); if ($__sc !== null): echo $__sc; else: ?>
                         <h4>1.9.1. Что такое индексы и как они работают</h4>
                         <p><strong>Индексы</strong> — это объект базы данных, которые создаются для одной или нескольких колонок таблицы. Они позволяют базе данных быстрее находить данные. </p>
                         <p><strong>Типы индексов:</strong></p>
@@ -969,7 +1208,7 @@ define('SPACE', '&nbsp;&nbsp;');
                             <li>[ASC[ENDING] | DESC[ENDING]] — Определяет порядок сортировки значений в индексе.<br>
                                 ASC или ASCENDING (по умолчанию) — Значения сортируются по возрастанию.<br>
                                 DESC или DESCENDING — Значения сортируются по убыванию.</li>
-                            <li>COMPUTED BY (<expression>) - Позволяет создать индекс для вычисляемой колонки. </li>
+                            <li>COMPUTED BY (&lt;expression&gt;) - Позволяет создать индекс для вычисляемой колонки. </li>
                         </ul>
                         <p>Команда <strong>ALTER INDEX</strong> используется для изменения свойств существующего индекса. </p>
                         <p>Примеры активации и деактивации индексов: </p>
@@ -993,14 +1232,92 @@ define('SPACE', '&nbsp;&nbsp;');
                         <p>Это показатель, который отражает, насколько уникальны значения в индексируемой колонке. Чем выше селективность, тем более эффективен индекс для поиска данных. Селективность вычисляется как отношение количества уникальных значений в колонке к общему количеству строк в таблице.</p>
                         <p><strong>Высокая</strong> — если значения в колонке почти уникальны. Например, колонка с email-адресами.</p>
                         <p><strong>Низкая</strong> — если значения в колонке повторяются. Например, колонка с полом (значения "М" и "Ж").</p>
+                    <?php endif; ?>
                     </div>
+
+                    <?php if (isTeacher()): ?>
+                    <form method="post" action="/toggle-topic.php" class="section-edit-form" id="sef-indexes" data-key="indexes" style="display:none">
+                        <input type="hidden" name="action" value="save_section">
+                        <input type="hidden" name="course" value="sql">
+                        <input type="hidden" name="topic_key" value="indexes">
+                        <input type="hidden" name="back" value="/sql-course.php#indexes">
+                        <input type="text" name="title" class="section-title-input" value="<?= htmlspecialchars($__indexesTitle) ?>" placeholder="Заголовок темы">
+                        <div id="editor-indexes"></div>
+                        <textarea name="content" style="display:none"></textarea>
+                        <div style="margin-top:8px; display:flex; gap:8px">
+                            <button type="submit" class="btn btn-primary btn-small">Сохранить</button>
+                            <button type="button" class="btn btn-small" onclick="toggleSectionEdit('sql','indexes')">Отмена</button>
+                        </div>
+                    </form>
+                    <?php endif; ?>
                 
                 <?= topicButton('sql', 'indexes', 'practice') ?>
                 </article>
 
+                <!-- Динамические темы из БД -->
+                <?php
+                $customSections = getCustomSections('sql');
+                foreach ($customSections as $cs):
+                    $csKey = htmlspecialchars($cs['section_key']);
+                    $csTitle = htmlspecialchars($cs['title']);
+                ?>
+                <article id="<?= $csKey ?>" class="lesson">
+                    <h3>
+                        <?= $csTitle ?>
+                        <?php if (isTeacher()): ?>
+                        <button class="edit-section-btn" onclick="toggleSectionEdit('sql','<?= $csKey ?>')">Редактировать тему</button>
+                        <form method="post" action="/toggle-topic.php" style="display:inline" onsubmit="return confirm('Удалить тему «<?= $csTitle ?>»?')">
+                            <input type="hidden" name="action" value="delete_section">
+                            <input type="hidden" name="course" value="sql">
+                            <input type="hidden" name="topic_key" value="<?= $csKey ?>">
+                            <input type="hidden" name="back" value="/sql-course.php">
+                            <button type="submit" class="delete-section-btn">✕</button>
+                        </form>
+                        <?php endif; ?>
+                    </h3>
+                    <div class="text-content" id="sc-<?= $csKey ?>">
+                        <?= $cs['content'] ?>
+                    </div>
+                    <?php if (isTeacher()): ?>
+                    <form method="post" action="/toggle-topic.php" class="section-edit-form" id="sef-<?= $csKey ?>" data-key="<?= $csKey ?>" style="display:none">
+                        <input type="hidden" name="action" value="save_section">
+                        <input type="hidden" name="course" value="sql">
+                        <input type="hidden" name="topic_key" value="<?= $csKey ?>">
+                        <input type="hidden" name="back" value="/sql-course.php#<?= $csKey ?>">
+                        <input type="text" name="title" class="section-title-input" value="<?= $csTitle ?>" placeholder="Заголовок темы">
+                        <div id="editor-<?= $csKey ?>"></div>
+                        <textarea name="content" style="display:none"></textarea>
+                        <div style="margin-top:8px; display:flex; gap:8px">
+                            <button type="submit" class="btn btn-primary btn-small">Сохранить</button>
+                            <button type="button" class="btn btn-small" onclick="toggleSectionEdit('sql','<?= $csKey ?>')">Отмена</button>
+                        </div>
+                    </form>
+                    <?php endif; ?>
+                </article>
+                <?php endforeach; ?>
+
+                <!-- Форма добавления новой темы (только для учителей) -->
+                <?php if (isTeacher()): ?>
+                <button class="add-topic-btn" onclick="toggleAddTopic()">+ Добавить новую тему</button>
+                <form method="post" action="/toggle-topic.php" class="add-topic-form" id="add-topic-form" style="display:none">
+                    <input type="hidden" name="action" value="add_section">
+                    <input type="hidden" name="course" value="sql">
+                    <input type="hidden" name="back" value="/sql-course.php">
+                    <label style="display:block; font-weight:600; margin-bottom:4px">Название темы:</label>
+                    <input type="text" name="title" placeholder="Например: 1.11. Представления (Views)" required>
+                    <label style="display:block; font-weight:600; margin: 10px 0 4px">Содержание:</label>
+                    <div id="editor-new-topic"></div>
+                    <textarea name="content" id="new-topic-content" style="display:none"></textarea>
+                    <div style="margin-top:12px; display:flex; gap:8px">
+                        <button type="submit" class="btn btn-primary">Добавить тему</button>
+                        <button type="button" class="btn" onclick="toggleAddTopic()">Отмена</button>
+                    </div>
+                </form>
+                <?php endif; ?>
+
                 <!-- 1.10 Практические задания -->
                 <article id="practice" class="lesson">
-                    <h3>1.10. Практические задания</h3>
+                    <h3>Практические задания</h3>
                     <div class="practice-section">
                         <p>Практические задания по курсу SQL Basics</p>
                         <a href="/sql-practice.php" class="btn">Перейти к заданиям</a>
@@ -1012,5 +1329,41 @@ define('SPACE', '&nbsp;&nbsp;');
     </div>
 </div>
 
+<script>
+(function () {
+    var tocLinks = document.querySelectorAll('.toc-nav a[href^="#"]');
+    if (!tocLinks.length) return;
+    var sections = [];
+    tocLinks.forEach(function (link) {
+        var id = link.getAttribute('href').slice(1);
+        var el = document.getElementById(id);
+        if (el) sections.push({ link: link, el: el });
+    });
+    if (!sections.length) return;
+
+    function setActive() {
+        var pos = window.scrollY + 110;
+        var current = sections[0];
+        for (var i = 0; i < sections.length; i++) {
+            if (sections[i].el.offsetTop <= pos) current = sections[i];
+        }
+        if (current.link.classList.contains('toc-active')) return;
+        tocLinks.forEach(function (l) { l.classList.remove('toc-active'); });
+        current.link.classList.add('toc-active');
+        if (current.link.scrollIntoView) {
+            current.link.scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    var ticking = false;
+    window.addEventListener('scroll', function () {
+        if (!ticking) {
+            requestAnimationFrame(function () { setActive(); ticking = false; });
+            ticking = true;
+        }
+    }, { passive: true });
+    setActive();
+})();
+</script>
 
 <?php require_once __DIR__ . '/templates/footer.php'; ?>

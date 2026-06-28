@@ -20,7 +20,7 @@ function getFirebirdConnection() {
                 throw new Exception("Файл базы данных не найден: " . $database);
             }
             
-            // Подключаемся через localhost как в вашем рабочем примере
+            // Подключаемся через localhost 
             $dsn = "firebird:dbname=localhost:{$database}";
             $firebird_db = new PDO($dsn, $username, $password);
             $firebird_db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

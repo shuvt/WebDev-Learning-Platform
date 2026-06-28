@@ -42,13 +42,10 @@ try {
     
     if ($result['count'] == 0) {
         $hashed_password = password_hash('123456', PASSWORD_DEFAULT);
-        // Создаем админа по умолчанию
         $db->exec("INSERT INTO users (username, email, password, role) VALUES 
                   ('admin', 'admin@example.com', '$hashed_password', 3)");
-        // Создаем тестового учителя
         $db->exec("INSERT INTO users (username, email, password, role) VALUES 
                   ('teacher', 'teacher@example.com', '$hashed_password', 2)");
-        // Создаем тестового студента
         $db->exec("INSERT INTO users (username, email, password, role) VALUES 
                   ('student', 'student@example.com', '$hashed_password', 1)");
     }
@@ -74,14 +71,11 @@ try {
         FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
     )");
     
-    // Проверяем, есть ли уже задания
     $stmt = $db->query("SELECT COUNT(*) as count FROM sql_tasks");
     $result = $stmt->fetch();
     
     if ($result['count'] == 0) {
-        // Вставляем начальные задания с решениями
         $tasks = [
-            // Простые SQL запросы
             ['simple', 1, 'Простые SQL-Запросы. Задание 1.', 
              'Напишите SQL запрос для вывода всех сотрудников из таблицы EMPLOYEE. Ожидается 104 записи в результате.',
              'SELECT * FROM EMPLOYEE', 104],
@@ -97,8 +91,6 @@ try {
             ['simple', 5, 'Простые SQL-Запросы. Задание 5.', 
              'Напишите SQL запрос для вывода списка сотрудников в USA с зарплатой больше 10000 или сотрудников с номером отдела 120. Ожидается 36 записей.',
              "SELECT FIRST_NAME, LAST_NAME FROM EMPLOYEE WHERE (SALARY > 10000 AND JOB_COUNTRY = 'USA') OR (DEPT_NO = '120')", 36],
-            
-            // Агрегация данных
             ['aggregation', 1, 'Агрегация данных. Задание 1', 
              'Используя агрегатные функции найдите среднюю зарплату сотрудников из отдела 623. Ожидается 1 запись.',
              "SELECT AVG(SALARY) FROM EMPLOYEE WHERE DEPT_NO = '623'", 1],
@@ -114,8 +106,6 @@ try {
             ['aggregation', 5, 'Агрегация данных. Задание 5', 
              'Найдите минимальное и максимальное значение зарплаты в отделе 120. Ожидается два столбца: MIN_SALARY, MAX_SALARY и 1 запись в результате.',
              "SELECT MIN(SALARY) as min_salary, MAX(SALARY) as max_salary FROM EMPLOYEE WHERE DEPT_NO = '120'", 1],
-            
-            // Соединение таблиц
             ['joins', 1, 'Соединение таблиц. Задание 1', 
              'Выведите полные имена сотрудников и названия их отделов. Ожидается два столбца: FULL_NAME, DEPARTMENT_NAME и 42 записи в результате.',
              "SELECT e.FIRST_NAME || ' ' || e.LAST_NAME as full_name, d.DEPARTMENT as department_name FROM EMPLOYEE e INNER JOIN DEPARTMENT d ON e.DEPT_NO = d.DEPT_NO", 42],
@@ -131,8 +121,6 @@ try {
             ['joins', 5, 'Соединение таблиц. Задание 5', 
              'Выведите имена сотрудников с бюджетом отдела больше 500000, которые были наняты после 01.01.1993. Ожидается 3 столбца: FULL_NAME, BUDGET, HIRE_DATE и 6 записей в результате.',
              "SELECT e.FIRST_NAME || ' ' || e.LAST_NAME as full_name, d.BUDGET, e.hire_date FROM EMPLOYEE e INNER JOIN DEPARTMENT d ON e.DEPT_NO = d.DEPT_NO WHERE d.BUDGET > 500000 AND e.HIRE_DATE > '1993-01-01'", 6],
-            
-            // Подзапросы
             ['subqueries', 1, 'Подзапросы. Задание 1', 
              'Выведите полную информацию (*) о сотрудниках, у которых зарплата выше средней. Ожидается 3 записи.',
              'SELECT * FROM EMPLOYEE WHERE SALARY > (SELECT AVG(SALARY) FROM EMPLOYEE)', 3],
@@ -179,6 +167,22 @@ try {
     
 } catch(Exception $e) {
     echo "Ошибка создания таблицы user_progress: " . $e->getMessage() . "<br>";
+}
+
+// Таблица прогресса по темам курса
+try {
+    $db->exec("CREATE TABLE IF NOT EXISTS course_topic_progress (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        course VARCHAR(50) NOT NULL,
+        topic_key VARCHAR(100) NOT NULL,
+        is_done TINYINT(1) DEFAULT 0,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY user_course_topic (user_id, course, topic_key),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )");
+} catch(Exception $e) {
+    echo "Ошибка создания таблицы course_topic_progress: " . $e->getMessage() . "<br>";
 }
 
 // Функции для работы с прогрессом
@@ -273,4 +277,56 @@ function isTaskCompleted($user_id, $topic, $task_number) {
     $result = $stmt->fetch();
     return $result && $result['is_completed'] == 1;
 }
-?>
+
+// Функции для работы с содержимым курсов
+function getCourseSection(string $course, string $key): ?string {
+    global $db;
+    $stmt = $db->prepare("SELECT content FROM course_sections WHERE course=? AND section_key=?");
+    $stmt->execute([$course, $key]);
+    $row = $stmt->fetch();
+    return $row ? $row['content'] : null;
+}
+
+function getCourseSectionTitle(string $course, string $key): ?string {
+    global $db;
+    $stmt = $db->prepare("SELECT title FROM course_sections WHERE course=? AND section_key=?");
+    $stmt->execute([$course, $key]);
+    $row = $stmt->fetch();
+    return ($row && $row['title'] !== null && $row['title'] !== '') ? $row['title'] : null;
+}
+
+function saveCourseSection(string $course, string $key, string $content, int $userId, ?string $title = null): void {
+    global $db;
+    if ($title !== null) {
+        $db->prepare("INSERT INTO course_sections (course, section_key, title, content, updated_by)
+                      VALUES (?, ?, ?, ?, ?)
+                      ON DUPLICATE KEY UPDATE title=VALUES(title), content=VALUES(content), updated_by=VALUES(updated_by)")
+           ->execute([$course, $key, $title, $content, $userId]);
+    } else {
+        $db->prepare("INSERT INTO course_sections (course, section_key, content, updated_by)
+                      VALUES (?, ?, ?, ?)
+                      ON DUPLICATE KEY UPDATE content=VALUES(content), updated_by=VALUES(updated_by)")
+           ->execute([$course, $key, $content, $userId]);
+    }
+}
+
+function getCustomSections(string $course): array {
+    global $db;
+    $stmt = $db->prepare("SELECT * FROM course_sections WHERE course=? AND is_custom=1 ORDER BY id ASC");
+    $stmt->execute([$course]);
+    return $stmt->fetchAll();
+}
+
+function saveCustomSection(string $course, string $key, string $title, string $content, int $userId): void {
+    global $db;
+    $db->prepare("INSERT INTO course_sections (course, section_key, title, content, is_custom, updated_by)
+                  VALUES (?, ?, ?, ?, 1, ?)
+                  ON DUPLICATE KEY UPDATE title=VALUES(title), content=VALUES(content), updated_by=VALUES(updated_by)")
+       ->execute([$course, $key, $title, $content, $userId]);
+}
+
+function deleteCustomSection(string $course, string $key): void {
+    global $db;
+    $db->prepare("DELETE FROM course_sections WHERE course=? AND section_key=? AND is_custom=1")
+       ->execute([$course, $key]);
+}

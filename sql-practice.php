@@ -32,6 +32,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sql_query'])) {
     $current_task  = $_POST['task_id'] ?? '1';
 
     if (!empty($user_query)) {
+    $sql_upper = strtoupper(trim($user_query));
+    if (strpos($sql_upper, 'SELECT') !== 0) {
+        $error_message = ' В учебных целях разрешены только SELECT-запросы. Изменение данных (DELETE, UPDATE, INSERT, DROP и т.д.) запрещено.';
+    } else {
         try {
             $query_result = executeFirebirdQuery($user_query);
 
@@ -66,6 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sql_query'])) {
             }
         }
     }
+}
 }
 
 if (isset($_POST['view_table'])) {
@@ -338,19 +343,22 @@ document.addEventListener('DOMContentLoaded', function() {
         td.textContent = formatCellValue(td.textContent);
     });
 
-    var ta = document.getElementById('sql_query');
-    var hl = document.getElementById('sql-highlights');
-    function update() {
-        if (!ta || !hl) return;
-        hl.innerHTML  = highlightSQL(ta.value) + '\n';
-        hl.scrollTop  = ta.scrollTop;
-        hl.scrollLeft = ta.scrollLeft;
-    }
-    if (ta) {
-        ta.addEventListener('input',  update);
-        ta.addEventListener('scroll', function() { if(hl){ hl.scrollTop=this.scrollTop; hl.scrollLeft=this.scrollLeft; } });
-        update();
-    }
+   var ta = document.getElementById('sql_query');
+var hl = document.getElementById('sql-highlights');
+var bd = hl ? hl.parentElement : null; // .pr-backdrop
+
+function update() {
+    if (!ta || !hl) return;
+    hl.innerHTML = highlightSQL(ta.value) + '\n';
+    if (bd) { bd.scrollTop = ta.scrollTop; bd.scrollLeft = ta.scrollLeft; }
+}
+if (ta) {
+    ta.addEventListener('input', update);
+    ta.addEventListener('scroll', function() {
+        if (bd) { bd.scrollTop = this.scrollTop; bd.scrollLeft = this.scrollLeft; }
+    });
+    update();
+}
 });
 </script>
 

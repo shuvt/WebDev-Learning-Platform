@@ -23,7 +23,7 @@ $db->exec("CREATE TABLE IF NOT EXISTS course_topic_progress (
 )");
 
 // Количество тем в каждом курсе
-$totals = ['sql' => 9, 'php' => 6, 'html' => 4, 'web' => 10];
+$totals = ['sql' => 9, 'php' => 6, 'html' => 4, 'web' => 11];
 
 // Сколько тем отмечено
 $stmt = $db->prepare("SELECT course, SUM(is_done) as done FROM course_topic_progress WHERE user_id=? GROUP BY course");

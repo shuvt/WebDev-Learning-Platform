@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= SITE_NAME ?></title>
     <style>
         * {
@@ -14,8 +14,9 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: rgb(248, 248, 248);
-            color: rgb(67, 35, 35);
+            color: rgb(57, 35, 67);
             line-height: 1.3;
+            overflow-x: hidden;
         }
         
         .container {
@@ -25,10 +26,10 @@
         }
         
         header {
-            background: linear-gradient(135deg, rgb(47, 87, 85), rgb(90, 150, 144));
+            background: linear-gradient(150deg, rgb(47, 68, 116), rgb(94, 129, 177, 0.6));
             color: white;
             padding: 15px 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         
         header .container {
@@ -68,7 +69,7 @@
             padding: 60px 20px;
             background: white;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(67, 35, 35, 0.1);
+            box-shadow: 0 4px 15px rgba(59, 35, 67, 0.1);
         }
         
         .hero h1 {
@@ -79,7 +80,7 @@
         
         .btn {
             display: inline-block;
-            background: rgb(47, 87, 85);
+            background: rgb(47, 69, 87);
             color: white;
             padding: 12px 25px;
             border: none;
@@ -105,7 +106,7 @@
         }
         
         .auth-container h2 {
-            color: rgb(47, 87, 85);
+            color: rgb(47, 63, 87);
             margin-bottom: 25px;
             text-align: center;
         }
@@ -131,7 +132,7 @@
         }
         
         .form-group input:focus {
-            border-color: rgb(90, 150, 144);
+            border-color: rgb(90, 116, 150);
             outline: none;
         }
         
@@ -149,8 +150,8 @@
         
         .message.success {
             background: rgba(90, 150, 144, 0.1);
-            color: rgb(47, 87, 85);
-            border: 1px solid rgb(90, 150, 144);
+            color: rgb(47, 64, 87);
+            border: 1px solid rgb(90, 118, 150);
         }
         
         .message.error {
@@ -170,8 +171,8 @@
             background: white;
             padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(67, 35, 35, 0.1);
-            border-left: 5px solid rgb(90, 150, 144);
+            box-shadow: 0 4px 15px rgba(57, 35, 67, 0.1);
+            border-left: 5px solid rgb(90, 126, 150);
             transition: transform 0.3s;
         }
         
@@ -189,6 +190,70 @@
             padding: 20px;
             color: rgb(100, 100, 100);
             font-size: 0.9rem;
+        }
+
+        /* ── Мобильная адаптация header.php ── */
+        @media (max-width: 768px) {
+            /* Запрещаем горизонтальный скролл — именно он обрезает header */
+            html, body {
+                overflow-x: hidden;
+                max-width: 100%;
+            }
+
+            /* Header растягивается на 100% viewport, не шире */
+            header {
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            header .container {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+                padding: 12px 16px;
+            }
+
+            header h1 {
+                font-size: 1.2rem;
+            }
+
+            nav {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 4px;
+            }
+
+            nav a {
+                margin-left: 0;
+                padding: 6px 10px;
+                font-size: 0.88rem;
+            }
+
+            /* main-контейнер не должен выходить за 100vw */
+            main.container {
+                padding: 12px 10px;
+                max-width: 100%;
+                box-sizing: border-box;
+                overflow-x: hidden;
+            }
+
+            .container {
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+
+            /* Hero-секция */
+            .hero {
+                padding: 30px 14px;
+            }
+            .hero h1 {
+                font-size: 1.6rem;
+            }
+
+            /* Auth-форма */
+            .auth-container {
+                padding: 24px 16px;
+            }
         }
     </style>
 </head>

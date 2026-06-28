@@ -21,6 +21,7 @@ function topicButton($course, $topicKey, $nextTopic = null) {
     }
     ?>
     <form method="post" action="/toggle-topic.php" class="topic-form">
+        <input type="hidden" name="action" value="toggle">
         <input type="hidden" name="course" value="<?= $course ?>">
         <input type="hidden" name="topic_key" value="<?= $topicKey ?>">
         <input type="hidden" name="next_topic" value="<?= $nextTopic ?>">
@@ -37,12 +38,87 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: /login.php');
         exit;
     }
-    
-    $userId    = (int)$_SESSION['user_id'];
-    $course    = $_POST['course']    ?? '';
-    $topicKey  = $_POST['topic_key'] ?? '';
+
+    $userId   = (int)$_SESSION['user_id'];
+    $action   = $_POST['action'] ?? 'toggle';
+    $course   = $_POST['course']    ?? '';
+    $topicKey = $_POST['topic_key'] ?? '';
+    $back     = $_POST['back']      ?? '/courses.php';
+
+
+    // ===== ЗАГРУЗКА ИЗОБРАЖЕНИЙ =====
+if ($action === 'upload_image') {
+    header('Content-Type: application/json');
+
+    if (!isTeacher()) {
+        echo json_encode(['success' => false, 'message' => 'Недостаточно прав']);
+        exit;
+    }
+
+    if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+        echo json_encode(['success' => false, 'message' => 'Файл не загружен']);
+        exit;
+    }
+
+    $file = $_FILES['image'];
+    $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!in_array($file['type'], $allowed)) {
+        echo json_encode(['success' => false, 'message' => 'Недопустимый тип файла']);
+        exit;
+    }
+
+    $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+    $newName = uniqid() . '.' . $ext;
+    $uploadDir = __DIR__ . '/uploads/';
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
+    }
+    $path = $uploadDir . $newName;
+
+    if (!move_uploaded_file($file['tmp_name'], $path)) {
+        echo json_encode(['success' => false, 'message' => 'Ошибка сохранения файла']);
+        exit;
+    }
+
+    echo json_encode(['success' => true, 'imageUrl' => '/uploads/' . $newName]);
+    exit; // завершаем обработку
+}
+
+
+    // Сохранение содержимого существующей секции
+    if ($action === 'save_section') {
+        if (isTeacher() && $course && $topicKey && isset($_POST['content'])) {
+            $title = isset($_POST['title']) ? trim($_POST['title']) : '';
+            saveCourseSection($course, $topicKey, $_POST['content'], $userId, $title !== '' ? $title : null);
+        }
+        header('Location: ' . $back);
+        exit;
+    }
+
+    // Добавление новой темы
+    if ($action === 'add_section') {
+        if (isTeacher() && $course && isset($_POST['content'], $_POST['title'])) {
+            $title = trim($_POST['title']);
+            if ($title !== '') {
+                $key = 'custom_' . substr(md5($title . microtime()), 0, 8);
+                saveCustomSection($course, $key, $title, $_POST['content'], $userId);
+            }
+        }
+        header('Location: ' . $back);
+        exit;
+    }
+
+    // Удаление пользовательской темы
+    if ($action === 'delete_section') {
+        if (isTeacher() && $course && $topicKey) {
+            deleteCustomSection($course, $topicKey);
+        }
+        header('Location: ' . $back);
+        exit;
+    }
+
+    // Переключение прогресса (по умолчанию)
     $nextTopic = $_POST['next_topic'] ?? null;
-    $back      = $_POST['back']      ?? '/courses.php';
 
     if ($course && $topicKey) {
         $stmt = $db->prepare("SELECT is_done FROM course_topic_progress WHERE user_id=? AND course=? AND topic_key=?");
@@ -60,4 +136,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Location: ' . $back);
     exit;
 }
-?>

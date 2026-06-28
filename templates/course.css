@@ -1,18 +1,28 @@
 /* ============================================
    ОБЩИЕ СТИЛИ ДЛЯ ВСЕХ КУРСОВ
    ============================================ */
+/* Картинки в материалах курса всегда вписываются в контейнер.
+   Не трогаем margin — отдельные изображения сознательно используют
+   margin: ... auto (центрирование) или собственный отступ слева. */
+.course-material img {
+    max-width: 100%;
+    height: auto;
+}
+
 
 .course-container {
-    color: rgb(47, 87, 85);
-    width: 1200px;
+    max-width: 1200px;
+    width: 100%;
     margin: 0 auto;
     padding: 10px;
+    box-sizing: border-box;
 }
 
 .course-content {
     display: grid;
     grid-template-columns: 290px minmax(0, 1fr);
     gap: 40px;
+    align-items: start;
 }
 
 /* ─── Содержание (боковая панель) ─── */
@@ -21,52 +31,92 @@
     padding: 25px;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(67, 35, 35, 0.1);
-    height: fit-content;
     position: sticky;
     top: 20px;
+    /* Не даём панели быть выше окна просмотра — иначе нижние пункты
+       становятся доступны только после прокрутки всей страницы */
+    max-height: calc(100vh - 40px);
+    display: flex;
+    flex-direction: column;
 }
 
     .table-of-contents h2 {
         color: rgb(47, 87, 85);
         margin-bottom: 20px;
         font-size: 1.3rem;
+        flex-shrink: 0;
     }
 
-.toc-nav ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+.toc-nav {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Собственная прокрутка содержания, не зависящая от прокрутки страницы */
+    padding-right: 6px;
+    margin-right: -6px;
 }
 
-.toc-nav li {
-    margin-bottom: 8px;
-}
-
-.toc-nav a {
-    color: rgb(38, 76, 73);
-    text-decoration: none;
-    padding: 5px 0 5px 10px;
-    display: block;
-    transition: color 0.3s;
-    border-left: 3px solid transparent;
-}
-
-    .toc-nav a:hover {
-        color: rgb(90, 150, 144);
-        border-left-color: rgb(90, 150, 144);
-        background-color: rgba(174, 216, 212, 0.1);
-        border-radius: 4px;
+    /* Тонкий скроллбар для списка содержания */
+    .toc-nav::-webkit-scrollbar {
+        width: 6px;
     }
 
-.toc-nav ul ul {
-    margin-left: 15px;
-    margin-top: 5px;
-}
-
-    .toc-nav ul ul a {
-        font-size: 0.9rem;
-        color: rgb(47, 87, 85);
+    .toc-nav::-webkit-scrollbar-track {
+        background: transparent;
     }
+
+    .toc-nav::-webkit-scrollbar-thumb {
+        background: rgba(90, 150, 144, 0.35);
+        border-radius: 10px;
+    }
+
+        .toc-nav::-webkit-scrollbar-thumb:hover {
+            background: rgba(90, 150, 144, 0.55);
+        }
+
+    .toc-nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .toc-nav li {
+        margin-bottom: 8px;
+    }
+
+    .toc-nav a {
+        color: rgb(38, 76, 73);
+        text-decoration: none;
+        padding: 5px 0 5px 10px;
+        display: block;
+        transition: color 0.3s;
+        border-left: 3px solid transparent;
+    }
+
+        .toc-nav a:hover {
+            color: rgb(90, 150, 144);
+            border-left-color: rgb(90, 150, 144);
+            background-color: rgba(174, 216, 212, 0.1);
+            border-radius: 4px;
+        }
+
+        /* Текущий раздел при прокрутке страницы */
+        .toc-nav a.toc-active {
+            color: rgb(47, 87, 85);
+            font-weight: 600;
+            border-left-color: rgb(47, 87, 85);
+            background-color: rgba(90, 150, 144, 0.12);
+            border-radius: 4px;
+        }
+
+    .toc-nav ul ul {
+        margin-left: 15px;
+        margin-top: 5px;
+    }
+
+        .toc-nav ul ul a {
+            font-size: 0.9rem;
+            color: rgb(47, 87, 85);
+        }
 
 /* ─── Материал курса ─── */
 .course-material {
@@ -262,7 +312,7 @@ li {
 /* ─── Сетка ─── */
 .pr-layout {
     display: grid;
-    grid-template-columns: 270px 1fr;
+    grid-template-columns: 270px minmax(0, 1fr);
     gap: 25px;
     align-items: start;
 }
@@ -480,6 +530,8 @@ li {
     border: 2px solid transparent;
     border-radius: 8px;
     padding: 15px;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
 }
 
 .pr-highlights {
@@ -489,6 +541,8 @@ li {
     white-space: pre-wrap;
     word-wrap: break-word;
     color: #333;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
 }
 
 .pr-form textarea {
@@ -507,6 +561,8 @@ li {
     z-index: 1;
     transition: border-color 0.2s;
     box-sizing: border-box;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
 }
 
     .pr-form textarea:focus {
@@ -533,24 +589,25 @@ li {
 
 /* ─── Подсветка синтаксиса  ─── */
 .sql-keyword {
-    font-weight: bold;
-    color: inherit;  
+    font-weight: normal;
+    color: rgb(47, 87, 85);
 }
+
 .sql-table {
     color: #039e0a;
     text-decoration: underline;
-    font-weight: 600;
+    font-weight: normal;
 }
 
 .sql-string {
-    background-color: rgb(79, 241, 253);  
-    color: #000000;             
+    background-color: rgb(79, 241, 253);
+    color: #000000;
     border-radius: 3px;
-    padding: 0 2px;
+    padding: 0;
 }
 
 .sql-comment {
-    color: #2600ff; 
+    color: #2600ff;
     font-style: italic;
 }
 
@@ -683,21 +740,50 @@ li {
     transition: background 0.2s, opacity 0.2s;
 }
 
-/* Нейтральная (назад, отмена) */
-.btn:not([class*="btn-"]):hover,
-.btn-neutral         { background: rgba(90, 150, 144, 0.15); color: rgb(47, 87, 85); }
-.btn-neutral:hover   { background: rgba(90, 150, 144, 0.28); }
+    /* Нейтральная (назад, отмена) */
+    .btn:not([class*="btn-"]):hover,
+    .btn-neutral {
+        background: rgba(90, 150, 144, 0.15);
+        color: rgb(47, 87, 85);
+    }
 
-.btn-primary         { background: rgb(47, 87, 85); color: white; }
-.btn-primary:hover   { background: rgb(90, 150, 144); }
+        .btn-neutral:hover {
+            background: rgba(90, 150, 144, 0.28);
+        }
 
-.btn-edit            { background: rgba(110, 86, 160, 0.12); color: rgb(90, 65, 145); border: 1px solid rgba(110, 86, 160, 0.3); }
-.btn-edit:hover      { background: rgba(110, 86, 160, 0.22); }
+.btn-primary {
+    background: rgb(47, 87, 85);
+    color: white;
+}
 
-.btn-delete          { background: rgba(220, 53, 69, 0.1); color: #c0392b; border: 1px solid rgba(220, 53, 69, 0.3); }
-.btn-delete:hover    { background: rgba(220, 53, 69, 0.22); }
+    .btn-primary:hover {
+        background: rgb(90, 150, 144);
+    }
 
-.btn-small           { padding: 5px 11px; font-size: 0.8rem; }
+.btn-edit {
+    background: rgba(110, 86, 160, 0.12);
+    color: rgb(90, 65, 145);
+    border: 1px solid rgba(110, 86, 160, 0.3);
+}
+
+    .btn-edit:hover {
+        background: rgba(110, 86, 160, 0.22);
+    }
+
+.btn-delete {
+    background: rgba(220, 53, 69, 0.1);
+    color: #c0392b;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+    .btn-delete:hover {
+        background: rgba(220, 53, 69, 0.22);
+    }
+
+.btn-small {
+    padding: 5px 11px;
+    font-size: 0.8rem;
+}
 
 /* ─── Уведомления ─── */
 .alert {
@@ -707,8 +793,18 @@ li {
     border-left: 5px solid;
     font-size: 0.95rem;
 }
-.alert-success { background: rgba(47, 87, 85, 0.08);  color: rgb(47, 87, 85); border-left-color: rgb(47, 87, 85); }
-.alert-error   { background: rgba(220, 53, 69, 0.08); color: #721c24;         border-left-color: #dc3545; }
+
+.alert-success {
+    background: rgba(47, 87, 85, 0.08);
+    color: rgb(47, 87, 85);
+    border-left-color: rgb(47, 87, 85);
+}
+
+.alert-error {
+    background: rgba(220, 53, 69, 0.08);
+    color: #721c24;
+    border-left-color: #dc3545;
+}
 
 /* ─── Белая карточка (общая) ─── */
 .admin-card {
@@ -728,33 +824,108 @@ li {
 }
 
 /* ─── Формы (tasks.php) ─── */
-.admin-form .form-row     { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; }
-.admin-form .form-group   { margin-bottom: 15px; }
-.admin-form label         { display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: 600; color: rgb(47, 87, 85); }
+.admin-form .form-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 15px;
+}
+
+.admin-form .form-group {
+    margin-bottom: 15px;
+}
+
+.admin-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: rgb(47, 87, 85);
+}
+
 .admin-form input,
 .admin-form select,
-.admin-form textarea      { width: 100%; padding: 10px 12px; border: 2px solid rgb(224, 217, 217); border-radius: 7px; font-size: 0.9rem; font-family: inherit; box-sizing: border-box; }
-.admin-form textarea      { font-family: 'Consolas', 'Monaco', monospace; resize: vertical; }
-.admin-form input:focus,
-.admin-form select:focus,
-.admin-form textarea:focus { border-color: rgb(90, 150, 144); outline: none; }
-.admin-form .hint         { display: block; margin-top: 4px; font-size: 0.8rem; color: rgb(47, 87, 85); opacity: 0.55; }
-.admin-form .form-buttons { display: flex; gap: 10px; margin-top: 18px; }
+.admin-form textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid rgb(224, 217, 217);
+    border-radius: 7px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.admin-form textarea {
+    font-family: 'Consolas', 'Monaco', monospace;
+    resize: vertical;
+}
+
+    .admin-form input:focus,
+    .admin-form select:focus,
+    .admin-form textarea:focus {
+        border-color: rgb(90, 150, 144);
+        outline: none;
+    }
+
+.admin-form .hint {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.8rem;
+    color: rgb(47, 87, 85);
+    opacity: 0.55;
+}
+
+.admin-form .form-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+}
 
 /* ─── Таблица заданий (tasks.php) ─── */
 .admin-table {
     width: 100%;
     border-collapse: collapse;
 }
-.admin-table th,
-.admin-table td          { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgba(90, 150, 144, 0.2); font-size: 0.9rem; color: rgb(47, 87, 85); }
-.admin-table th          { background: rgba(90, 150, 144, 0.1); font-weight: 600; }
-.admin-table tr:hover td { background: rgba(90, 150, 144, 0.05); }
-.admin-table .actions    { white-space: nowrap; }
 
-.topic-group             { margin-bottom: 28px; }
-.topic-group h3          { font-size: 0.95rem; font-weight: 700; color: rgb(47, 87, 85); margin-bottom: 10px; }
-.no-tasks                { color: rgb(47, 87, 85); opacity: 0.5; font-style: italic; padding: 8px 0; font-size: 0.9rem; }
+    .admin-table th,
+    .admin-table td {
+        padding: 10px 12px;
+        text-align: left;
+        border-bottom: 1px solid rgba(90, 150, 144, 0.2);
+        font-size: 0.9rem;
+        color: rgb(47, 87, 85);
+    }
+
+    .admin-table th {
+        background: rgba(90, 150, 144, 0.1);
+        font-weight: 600;
+    }
+
+    .admin-table tr:hover td {
+        background: rgba(90, 150, 144, 0.05);
+    }
+
+    .admin-table .actions {
+        white-space: nowrap;
+    }
+
+.topic-group {
+    margin-bottom: 28px;
+}
+
+    .topic-group h3 {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: rgb(47, 87, 85);
+        margin-bottom: 10px;
+    }
+
+.no-tasks {
+    color: rgb(47, 87, 85);
+    opacity: 0.5;
+    font-style: italic;
+    padding: 8px 0;
+    font-size: 0.9rem;
+}
 
 /* ─── Статистика (users.php) ─── */
 .stats-summary {
@@ -763,6 +934,7 @@ li {
     gap: 14px;
     margin: 20px 0;
 }
+
 .stat-card {
     background: white;
     padding: 16px 20px;
@@ -770,38 +942,149 @@ li {
     box-shadow: 0 4px 15px rgba(47, 87, 85, 0.1);
     text-align: center;
 }
-.stat-card h3 { font-size: 1.8rem; color: rgb(47, 87, 85); margin-bottom: 4px; }
-.stat-card p  { font-size: 0.85rem; color: rgb(47, 87, 85); opacity: 0.6; margin: 0; }
+
+    .stat-card h3 {
+        font-size: 1.8rem;
+        color: rgb(47, 87, 85);
+        margin-bottom: 4px;
+    }
+
+    .stat-card p {
+        font-size: 0.85rem;
+        color: rgb(47, 87, 85);
+        opacity: 0.6;
+        margin: 0;
+    }
 
 /* ─── Таблица пользователей (users.php) ─── */
-.users-section           { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(47, 87, 85, 0.1); }
-.users-section h2        { font-size: 1.05rem; font-weight: 700; color: rgb(47, 87, 85); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid rgba(90, 150, 144, 0.35); }
-.table-container         { width: 100%; overflow-x: auto; }
+.users-section {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(47, 87, 85, 0.1);
+}
 
-.users-table             { width: 100%; min-width: 800px; border-collapse: collapse; }
-.users-table th,
-.users-table td          { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgba(90, 150, 144, 0.15); font-size: 0.9rem; color: rgb(47, 87, 85); }
-.users-table th          { background: rgba(90, 150, 144, 0.1); font-weight: 600; }
-.users-table tr:hover td { background: rgba(90, 150, 144, 0.05); }
-.users-table tr.current-user td { background: rgba(47, 87, 85, 0.06); }
-.users-table .actions    { white-space: nowrap; }
+    .users-section h2 {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: rgb(47, 87, 85);
+        margin-bottom: 16px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(90, 150, 144, 0.35);
+    }
 
-.badge        { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; margin-left: 5px; }
-.badge-you    { background: rgb(90, 150, 144); color: white; }
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
 
-.role-badge   { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.82rem; font-weight: 500; }
-.role-1       { background: rgba(90, 150, 144, 0.18);  color: rgb(47, 87, 85); }
-.role-2       { background: rgba(92, 107, 192, 0.18);  color: #3f51b5; }
-.role-3       { background: rgba(110, 86, 160, 0.18);  color: rgb(90, 65, 145); }
+.users-table {
+    width: 100%;
+    min-width: 800px;
+    border-collapse: collapse;
+}
 
-.progress-mini     { width: 60px; height: 7px; background: rgba(90, 150, 144, 0.18); border-radius: 4px; overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 5px; }
-.progress-bar-mini { height: 100%; background: rgb(90, 150, 144); border-radius: 4px; }
+    .users-table th,
+    .users-table td {
+        padding: 10px 12px;
+        text-align: left;
+        border-bottom: 1px solid rgba(90, 150, 144, 0.15);
+        font-size: 0.9rem;
+        color: rgb(47, 87, 85);
+    }
 
-.role-form         { display: inline-block; margin-right: 8px; }
-.role-form select  { padding: 4px 8px; border: 1px solid rgba(90, 150, 144, 0.4); border-radius: 6px; font-size: 0.85rem; color: rgb(47, 87, 85); }
-.no-action         { color: rgb(47, 87, 85); opacity: 0.35; }
+    .users-table th {
+        background: rgba(90, 150, 144, 0.1);
+        font-weight: 600;
+    }
 
-.admin-container { max-width: 1400px; margin: 0 auto; }
+    .users-table tr:hover td {
+        background: rgba(90, 150, 144, 0.05);
+    }
+
+    .users-table tr.current-user td {
+        background: rgba(47, 87, 85, 0.06);
+    }
+
+    .users-table .actions {
+        white-space: nowrap;
+    }
+
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    margin-left: 5px;
+}
+
+.badge-you {
+    background: rgb(90, 150, 144);
+    color: white;
+}
+
+.role-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.82rem;
+    font-weight: 500;
+}
+
+.role-1 {
+    background: rgba(90, 150, 144, 0.18);
+    color: rgb(47, 87, 85);
+}
+
+.role-2 {
+    background: rgba(92, 107, 192, 0.18);
+    color: #3f51b5;
+}
+
+.role-3 {
+    background: rgba(110, 86, 160, 0.18);
+    color: rgb(90, 65, 145);
+}
+
+.progress-mini {
+    width: 60px;
+    height: 7px;
+    background: rgba(90, 150, 144, 0.18);
+    border-radius: 4px;
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+.progress-bar-mini {
+    height: 100%;
+    background: rgb(90, 150, 144);
+    border-radius: 4px;
+}
+
+.role-form {
+    display: inline-block;
+    margin-right: 8px;
+}
+
+    .role-form select {
+        padding: 4px 8px;
+        border: 1px solid rgba(90, 150, 144, 0.4);
+        border-radius: 6px;
+        font-size: 0.85rem;
+        color: rgb(47, 87, 85);
+    }
+
+.no-action {
+    color: rgb(47, 87, 85);
+    opacity: 0.35;
+}
+
+.admin-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
 
 
 /* ============================================
@@ -898,10 +1181,10 @@ li {
     transition: opacity 0.15s, transform 0.15s;
 }
 
-.db-btn:hover {
-    opacity: 0.82;
-    transform: translateY(-1px);
-}
+    .db-btn:hover {
+        opacity: 0.82;
+        transform: translateY(-1px);
+    }
 
 .db-btn--teal {
     background: rgba(90, 150, 144, 0.15);
@@ -1040,28 +1323,52 @@ li {
     transition: all 0.2s ease;
 }
 
-.topic-done-btn.done {
-    background: rgb(47, 87, 85);
-    color: #fff;
-    border-color: transparent;
-}
+    .topic-done-btn.done {
+        background: rgb(47, 87, 85);
+        color: #fff;
+        border-color: transparent;
+    }
 
-.topic-done-btn:hover {
-    opacity: 0.85;
-    transform: translateY(-1px);
-}
+    .topic-done-btn:hover {
+        opacity: 0.85;
+        transform: translateY(-1px);
+    }
 
 /* ============================================
    СТИЛИ ДЛЯ СТРАНИЦЫ КУРСОВ (courses.php)
    ============================================ */
 
-.cs-wrap { max-width: 960px; margin: 0 auto; }
-.cs-head { margin-bottom: 24px; margin-top: 20px; padding: 5px 0px; }
-.cs-h1   { font-size: 1.5rem; font-weight: 600; color: rgb(47,87,85); }
-.cs-sub  { font-size: .92rem; color: #555; }
-.cs-sub strong { color: rgb(47,87,85); }
+.cs-wrap {
+    max-width: 960px;
+    margin: 0 auto;
+}
 
-.cs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.cs-head {
+    margin-bottom: 24px;
+    margin-top: 20px;
+    padding: 5px 0px;
+}
+
+.cs-h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: rgb(47,87,85);
+}
+
+.cs-sub {
+    font-size: .92rem;
+    color: #555;
+}
+
+    .cs-sub strong {
+        color: rgb(47,87,85);
+    }
+
+.cs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+}
 
 .cs-card {
     background: #fff;
@@ -1070,29 +1377,646 @@ li {
     box-shadow: 0 4px 15px rgba(55, 35, 67, 0.14);
     transition: box-shadow 0.2s, transform 0.2s;
 }
-.cs-card:hover {
-    box-shadow: 0 8px 28px rgba(130, 110, 172, 0.3);
-    transform: translateY(-3px);
+
+    .cs-card:hover {
+        box-shadow: 0 8px 28px rgba(130, 110, 172, 0.3);
+        transform: translateY(-3px);
+    }
+
+.cs-card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
 }
 
-.cs-card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-.cs-num { width: 38px; height: 38px; flex-shrink: 0; border-radius: 9px; background: rgba(90,150,144,.17); color: rgb(47,87,85); font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
-.cs-num--final { background: rgba(47,87,85,.13); }
+.cs-num {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    border-radius: 9px;
+    background: rgba(90,150,144,.17);
+    color: rgb(47,87,85);
+    font-size: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-.cs-card-title    { font-size: 1.3rem; font-weight: 640; color: rgb(47,87,85); }
-.cs-card-sub      { font-size: .75rem; color: #888; margin-top: 2px; }
-.cs-card-sub--teal{ color: rgb(90,150,144); font-weight: 500; }
+.cs-num--final {
+    background: rgba(47,87,85,.13);
+}
 
-.cs-done-badge { margin-left: auto; font-size: .72rem; background: rgba(130, 110, 172, .2); color: rgb(69, 47, 87); padding: 3px 10px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
+.cs-card-title {
+    font-size: 1.3rem;
+    font-weight: 640;
+    color: rgb(47,87,85);
+}
 
-.cs-card-desc { font-size: .83rem; color: #555; line-height: 1.6; margin-bottom: 14px; }
+.cs-card-sub {
+    font-size: .75rem;
+    color: #888;
+    margin-top: 2px;
+}
 
-.cs-bar-wrap { margin-bottom: 14px; }
-.cs-bar      { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; margin-bottom: 5px; }
-.cs-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, rgb(60, 123, 117) 0%, rgb(130, 110, 172, .57) 100%); }
-.cs-bar-meta { display: flex; justify-content: space-between; font-size: .75rem; color: #888; }
+.cs-card-sub--teal {
+    color: rgb(90,150,144);
+    font-weight: 500;
+}
 
-.cs-btn { display: inline-block; padding: 8px 18px; border-radius: 8px; font-size: .83rem; font-weight: 500; text-decoration: none; }
-.cs-btn:hover { opacity: .85; }
-.cs-btn--start, .cs-btn--continue { background: rgb(47,87,85); color: #fff; }
-.cs-btn--repeat { background: rgba(90,150,144,.15); color: rgb(47,87,85); }
+.cs-done-badge {
+    margin-left: auto;
+    font-size: .72rem;
+    background: rgba(130, 110, 172, .2);
+    color: rgb(69, 47, 87);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.cs-card-desc {
+    font-size: .83rem;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 14px;
+}
+
+.cs-bar-wrap {
+    margin-bottom: 14px;
+}
+
+.cs-bar {
+    height: 6px;
+    background: #eee;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.cs-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, rgb(60, 123, 117) 0%, rgb(130, 110, 172, .57) 100%);
+}
+
+.cs-bar-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: .75rem;
+    color: #888;
+}
+
+.cs-btn {
+    display: inline-block;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: .83rem;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+    .cs-btn:hover {
+        opacity: .85;
+    }
+
+.cs-btn--start, .cs-btn--continue {
+    background: rgb(47,87,85);
+    color: #fff;
+}
+
+.cs-btn--repeat {
+    background: rgba(90,150,144,.15);
+    color: rgb(47,87,85);
+}
+
+/* ============================================
+   МОБИЛЬНАЯ АДАПТАЦИЯ (все страницы)
+   Breakpoints:
+     ≤ 768px  — планшет/телефон (основной)
+     ≤ 480px  — маленький телефон
+   ПК-стили (> 768px) не затронуты.
+   ============================================ */
+
+@media (max-width: 768px) {
+
+    /* ── Viewport-fix: запрещаем горизонтальный скролл на уровне body ── */
+    html, body {
+        overflow-x: hidden;
+        width: 100%;
+    }
+
+    /* ════════════════════════════════════════
+       КУРС (course.php)
+    ════════════════════════════════════════ */
+
+    .course-container {
+        padding: 8px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Боковое оглавление + материал → одна колонка */
+    .course-content {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    /* Оглавление: перестаёт быть sticky, сворачивается */
+    .table-of-contents {
+        position: static;
+        padding: 16px;
+        border-radius: 10px;
+        /* На мобильном содержание не "плавает" рядом с текстом —
+           снимаем ограничение по высоте, пусть отображается целиком */
+        max-height: none;
+    }
+
+    .toc-nav {
+        /* Высокий список тем не должен требовать отдельной прокрутки
+           на мобильном — там и так всё в одну колонку */
+        max-height: 50vh;
+        overflow-y: auto;
+    }
+
+    .table-of-contents h2 {
+        font-size: 1.1rem;
+        margin-bottom: 12px;
+    }
+
+    .toc-nav ul ul {
+        margin-left: 10px;
+    }
+
+    /* Материал курса */
+    .course-material {
+        padding: 16px;
+        border-radius: 10px;
+    }
+
+    .chapter {
+        margin-bottom: 32px;
+    }
+
+        .chapter h1 {
+            font-size: 1.3rem;
+        }
+
+        .chapter h2 {
+            font-size: 1.1rem;
+        }
+
+    .lesson h3 {
+        font-size: 1rem;
+    }
+
+    /* Блоки кода — перенос длинных строк вместо horizontal-only скролла */
+    .content-placeholder {
+        font-size: 0.8rem;
+        padding: 12px 14px;
+    }
+
+    /* Таблицы курса — скролл по горизонтали */
+    .course-material table {
+        font-size: 0.82rem;
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Практический блок */
+    .practice-section {
+        padding: 18px 14px;
+    }
+
+    /* Списки */
+    ol {
+        margin-left: 18px;
+    }
+
+    ul {
+        margin-left: 22px;
+    }
+
+    /* Якоря */
+    .chapter, .lesson {
+        scroll-margin-top: 10px;
+    }
+
+
+    /* ════════════════════════════════════════
+       ПРАКТИКА (sql-practice.php)
+    ════════════════════════════════════════ */
+
+    .pr-wrap {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .pr-h1 {
+        font-size: 1.25rem;
+    }
+
+    /* Сетка: боковая панель вверху, редактор ниже */
+    .pr-layout {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .pr-sidebar {
+        position: static;
+        border-radius: 10px;
+    }
+
+    .pr-topic-head {
+        padding: 12px 14px;
+        font-size: 0.9rem;
+    }
+
+    .pr-workspace {
+        padding: 16px;
+        border-radius: 10px;
+    }
+
+    .pr-task-title {
+        font-size: 1rem;
+    }
+
+    .pr-form textarea,
+    .pr-highlights {
+        font-size: 14px;
+    }
+
+    /* Кнопки таблиц — переносятся */
+    .pr-tables {
+        gap: 8px;
+    }
+
+    .pr-table-btn {
+        font-size: 0.82rem;
+        padding: 7px 12px;
+    }
+
+    /* Таблица результатов уже имеет overflow-x: auto — оставляем */
+
+
+    /* ════════════════════════════════════════
+       ADMIN-СТРАНИЦЫ
+    ════════════════════════════════════════ */
+
+    .admin-container {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Статистика: 2 колонки вместо 4 */
+    .stats-summary {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .stat-card {
+        padding: 12px 14px;
+    }
+
+        .stat-card h3 {
+            font-size: 1.4rem;
+        }
+
+    /* Таблица пользователей — скролл */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Форма задания */
+    .admin-form .form-row {
+        grid-template-columns: 1fr;
+    }
+
+
+    /* ════════════════════════════════════════
+       ЛИЧНЫЙ КАБИНЕТ (dashboard.php)
+    ════════════════════════════════════════ */
+
+    .db-wrap {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .db-card {
+        padding: 18px 14px;
+        border-radius: 12px;
+    }
+
+    .db-h1 {
+        font-size: 1.25rem;
+    }
+
+    /* Секция пользователя */
+    .db-user-section {
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .db-user-btns {
+        min-width: unset;
+        width: 100%;
+    }
+
+    /* Прогресс: стек вместо сетки */
+    .db-progress-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    /* Скрываем вертикальный разделитель */
+    .db-progress-sep {
+        display: none;
+    }
+
+    .db-circle-wrap {
+        width: 100px;
+        height: 100px;
+    }
+
+    .db-circle-label {
+        font-size: 1.1rem;
+    }
+
+
+    /* ════════════════════════════════════════
+       СТРАНИЦА КУРСОВ (courses.php)
+    ════════════════════════════════════════ */
+
+    .cs-wrap {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* 2 карточки → 1 колонка */
+    .cs-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .cs-card {
+        padding: 16px;
+    }
+
+    .cs-card-title {
+        font-size: 1.1rem;
+    }
+
+    .cs-h1 {
+        font-size: 1.25rem;
+    }
+
+    /* Неразрывные пробелы в листингах не должны распирать блок */
+    .content-placeholder {
+        overflow-x: auto;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+        .content-placeholder p {
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+    /* Картинки не выходят за край. На мобильном экране десктопные
+       отступы (например margin-left: 40px для смещённой схемы БД)
+       только мешают — убираем боковой отступ, но не растягиваем
+       намеренно небольшие иллюстрации (схемы JOIN и т.п.) на всю ширину. */
+    .course-material img {
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+}
+/* end @media 768px */
+
+
+/* ── Очень маленькие экраны (≤ 480px) ── */
+@media (max-width: 480px) {
+
+    .course-material {
+        padding: 12px;
+    }
+
+    .pr-workspace {
+        padding: 12px;
+    }
+
+    .db-card {
+        padding: 14px 10px;
+    }
+
+    .content-placeholder {
+        font-size: 0.76rem;
+    }
+
+    .pr-form textarea,
+    .pr-highlights {
+        font-size: 13px;
+    }
+
+    /* Статистика: 1 колонка на совсем маленьких */
+    .stats-summary {
+        grid-template-columns: 1fr;
+    }
+
+    /* Кнопки — на всю ширину для удобного тапа */
+    .pr-run-btn,
+    .preview-btn {
+        width: 100%;
+        text-align: center;
+        box-sizing: border-box;
+    }
+}
+
+/* ─── Стили для блоков кода из Quill (и не только) ─── */
+.text-content pre,
+.text-content .ql-code-block,
+.text-content pre code {
+    background: rgb(243, 246, 246);
+    padding: 18px 20px;
+    border-radius: 8px;
+    border-left: 4px solid rgb(90, 150, 144);
+    color: rgb(47, 87, 85);
+    font-family: 'Courier New', monospace;
+    font-size: 0.87rem;
+    line-height: 1.75;
+    display: block;
+    margin: 1em 0;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Инлайн-код (внутри текста) */
+.text-content code:not(pre code) {
+    background: rgb(243, 246, 246);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    display: inline;
+    border-left: none;
+    margin: 0;
+    font-family: 'Courier New', monospace;
+}
+
+
+/* ─── Поле редактирования заголовка темы ─── */
+.section-title-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    border: 2px solid rgb(224, 217, 217);
+    border-radius: 6px;
+    font-weight: 600;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+    .section-title-input:focus {
+        border-color: rgb(90, 150, 144);
+        outline: none;
+    }
+
+
+/* ============================================
+   СТИЛИ ДЛЯ РЕДАКТИРОВАНИЯ КУРСОВ (админка)
+   ============================================ */
+
+.edit-section-btn {
+    background: none;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    padding: 1px 8px;
+    margin-left: 10px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    color: #666;
+    vertical-align: middle;
+}
+
+    .edit-section-btn:hover {
+        background: #f0f0f0;
+        border-color: #888;
+    }
+
+
+
+/* КНОПКИ РЕДАКТИРОВАНИЯ (фиолетовые) */
+button.edit-section-btn {
+    background: rgba(230, 211, 243, 0.5) !important;
+    border: 1.7px solid #9d8cc0 !important;
+    border-radius: 8px !important;
+    padding: 6px 18px !important;
+    margin-left: 10px !important;
+    cursor: pointer !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    color: #6E56A0 !important;
+    vertical-align: middle !important;
+    transition: background 0.2s, color 0.2s, border-color 0.2s !important;
+}
+
+    button.edit-section-btn:hover {
+        background: rgba(135, 105, 195, 0.5) !important;
+        border-color: #6E56A0 !important;
+    }
+
+.section-edit-form {
+    background: #f8f8f8;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 14px;
+    margin: 10px 0;
+}
+
+.ql-container {
+    font-size: 14px;
+    background: white;
+}
+
+.ql-editor {
+    min-height: 200px;
+}
+
+.add-topic-btn {
+    display: block;
+    width: 100%;
+    margin: 18px 0 10px;
+    padding: 10px;
+    background: #eaf4f2;
+    border: 2px dashed #7bb8b3;
+    border-radius: 8px;
+    color: #2e5d5a;
+    font-size: 1rem;
+    cursor: pointer;
+    text-align: center;
+}
+
+    .add-topic-btn:hover {
+        background: #d5ece9;
+    }
+
+.add-topic-form {
+    background: #f8f8f8;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 18px;
+    margin: 10px 0;
+}
+
+    .add-topic-form input[type=text] {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 8px 10px;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        margin-bottom: 10px;
+    }
+
+.delete-section-btn {
+    background: none;
+    border: 1px solid #e08080;
+    border-radius: 4px;
+    padding: 1px 8px;
+    margin-left: 6px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    color: #c0392b;
+    vertical-align: middle;
+}
+
+    .delete-section-btn:hover {
+        background: #fdf0f0;
+    }
+
+.section-title-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 7px 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    font-family: inherit;
+}
+
+    .section-title-input:focus {
+        border-color: rgb(90, 150, 144);
+        outline: none;
+    }
+
+
