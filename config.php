@@ -1,5 +1,4 @@
 <?php
-// Добавьте ЭТИ 3 строки в самое начало файла
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'] ?? 'learning-platform.local';
 define('SITE_URL', $protocol . '://' . $host);
